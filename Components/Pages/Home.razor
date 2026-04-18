@@ -103,12 +103,55 @@
     private async Task LoadAllFeeds()
     {
         IsLoading = true;
-        // CVEs de NIST/CISA
-        CveItems = await FetchFeed("https://www.cisa.gov/cybersecurity-advisories/all.xml", "Security", 3);
-        // Geek Pulse: Bounding Into Comics (Más amigable para imágenes)
-        GeekItems = await FetchFeed("https://boundingintocomics.com/feed/", "Geek", 3);
-        // Feed Principal
-        NewsItems = await FetchFeed("https://www.theverge.com/rss/index.xml", "General", 5);
+
+        var feedSources = new List<(string Url, string Category, int Count)>
+    {
+        // 🔒 Ciberseguridad
+        ("https://www.cisa.gov/cybersecurity-advisories/all.xml",         "Security", 2),
+        ("https://feeds.feedburner.com/TheHackersNews",                   "Security", 2),
+        ("https://krebsonsecurity.com/feed/",                             "Security", 1),
+
+        // ☁️ Cloud / DevOps
+        ("https://aws.amazon.com/blogs/aws/feed/",                        "Cloud",    2),
+        ("https://azure.microsoft.com/en-us/blog/feed/",                  "Cloud",    2),
+        ("https://cloud.google.com/feeds/gcp-release-notes.xml",          "Cloud",    1),
+
+        // 💻 Tech General
+        ("https://www.theverge.com/rss/index.xml",                        "General",  2),
+        ("https://feeds.arstechnica.com/arstechnica/index",               "General",  2),
+        ("https://www.wired.com/feed/rss",                                "General",  1),
+
+        // 🤖 IA / ML
+        ("https://openai.com/news/rss.xml",                               "AI",       2),
+        ("https://huggingface.co/blog/feed.xml",                          "AI",       2),
+        ("https://blogs.microsoft.com/ai/feed/",                          "AI",       1),
+
+        // 🍿 Geek / Cultura pop
+        ("https://boundingintocomics.com/feed/",                          "Geek",     2),
+        ("https://www.cbr.com/feed/",                                     "Geek",     2),
+
+        // 🎌 Anime
+        ("https://www.animenewsnetwork.com/all/rss.xml?ann-edition=us",   "Anime",    2),
+        ("https://myanimelist.net/rss/news.xml",                          "Anime",    2),
+    };
+
+        // CVE sidebar (se mantiene separado)
+        CveItems = await FetchFeed(
+            "https://www.cisa.gov/cybersecurity-advisories/all.xml", "Security", 3);
+
+        // Geek sidebar
+        GeekItems = await FetchFeed(
+            "https://boundingintocomics.com/feed/", "Geek", 3);
+
+        // Main stream: fetch todas las fuentes en paralelo
+        var tasks = feedSources.Select(f => FetchFeed(f.Url, f.Category, f.Count));
+        var results = await Task.WhenAll(tasks);
+
+        NewsItems = results
+            .SelectMany(x => x)
+            .OrderByDescending(x => x.PublishDate)  // Más recientes primero
+            .ToList();
+
         IsLoading = false;
     }
 
@@ -126,40 +169,62 @@
                 PublishDate = item.PublishDate.DateTime,
                 Category = category,
                 Source = feed.Title.Text,
-                ImageUrl = ExtractImageUrl(item)
+                ImageUrl = ExtractImageUrl(item, item.Links.FirstOrDefault()?.Uri.ToString() ?? "")
             }).ToList();
         }
         catch { return new List<NewsItem>(); }
     }
 
-    private string ExtractImageUrl(SyndicationItem item)
+    private string ExtractImageUrl(SyndicationItem item, string articleLink = "")
     {
-        // 1. Intento por Enclosure (estándar antiguo)
-        var url = item.Links.FirstOrDefault(l => l.RelationshipType == "enclosure")?.Uri.ToString();
+        string? url = null;
 
-        // 2. Intento por Media RSS (El estándar de Yahoo que usan casi todos)
+        // 1. Enclosure (podcast/old RSS standard)
+        url = item.Links.FirstOrDefault(l => l.RelationshipType == "enclosure")?.Uri.ToString();
+
+        // 2. Media RSS (Yahoo standard) - fix del namespace
         if (string.IsNullOrEmpty(url))
         {
-            // Buscamos la extensión que contenga la URL de la imagen
-            var mediaExtension = item.ElementExtensions
-                .FirstOrDefault(e => e.OuterName == "content" && e.OuterNamespace.Contains("mrss"));
+            var mediaContent = item.ElementExtensions
+                .FirstOrDefault(e => e.OuterName == "content" &&
+                                e.OuterNamespace == "http://search.yahoo.com/mrss/");
         
-            if (mediaExtension != null)
-            {
-                url = mediaExtension.GetObject<System.Xml.XmlElement>().GetAttribute("url");
-            }
+            if (mediaContent != null)
+                url = mediaContent.GetObject<System.Xml.XmlElement>().GetAttribute("url");
         }
 
-        // 3. Si sigue vacío, buscamos la etiqueta <img> dentro del texto del resumen
+        // 3. media:thumbnail (alternativa común)
+        if (string.IsNullOrEmpty(url))
+        {
+            var mediaThumbnail = item.ElementExtensions
+                .FirstOrDefault(e => e.OuterName == "thumbnail" &&
+                                e.OuterNamespace == "http://search.yahoo.com/mrss/");
+        
+            if (mediaThumbnail != null)
+                url = mediaThumbnail.GetObject<System.Xml.XmlElement>().GetAttribute("url");
+        }
+
+        // 4. <img> dentro del Summary HTML
         if (string.IsNullOrEmpty(url))
         {
             string content = item.Summary?.Text ?? "";
-            var match = System.Text.RegularExpressions.Regex.Match(content, "<img.+?src=[\"'](.+?)[\"'].*?>");
+            var match = System.Text.RegularExpressions.Regex.Match(
+                content, @"<img[^>]+src=[""']([^""']+)[""']");
             if (match.Success) url = match.Groups[1].Value;
         }
 
-        // Si todo falla, devuelve el placeholder que ya viste
-        return !string.IsNullOrEmpty(url) ? url : "https://via.placeholder.com/400x200/161616/03dac6?text=NEXUS+INTEL";
+        // 5. Fallback: favicon del sitio de origen ✅
+        if (string.IsNullOrEmpty(url) && !string.IsNullOrEmpty(articleLink))
+        {
+            try
+            {
+                var domain = new Uri(articleLink).Host;
+                url = $"https://www.google.com/s2/favicons?domain={domain}&sz=128";
+            }
+            catch { }
+        }
+
+        return url ?? "https://via.placeholder.com/400x200/161616/03dac6?text=NEXUS+INTEL";
     }
 
     private static string StripHtml(string input)

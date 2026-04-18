@@ -29,7 +29,9 @@ namespace HNHQ.Models
                     PublishDate = item.PublishDate.UtcDateTime == DateTime.MinValue
                                   ? DateTime.UtcNow
                                   : item.PublishDate.UtcDateTime,
-                    Link = item.Links.FirstOrDefault()?.Uri.ToString() ?? string.Empty
+                    Link = item.Links.FirstOrDefault()?.Uri.ToString() ?? string.Empty,
+                    ImageUrl = $"https://www.google.com/s2/favicons?domain=" +
+                               (item.Links.FirstOrDefault()?.Uri.Host ?? "google.com") + "&sz=128"
                 }));
             }
 
