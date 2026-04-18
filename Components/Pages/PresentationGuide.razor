@@ -4,13 +4,13 @@
 
 <div class="container">
     <div class="header">
-        <h1>Guía de presentación — kleva-devops-lab</h1>
-        <p>@Topics.Count secciones · ~45 min · Stack completo · Perspectiva del dev que te contrata</p>
+        <h1>Presentation guide — kleva-devops-lab</h1>
+        <p>@Topics.Count sections · ~45 min · Full stack · Hiring manager perspective</p>
     </div>
 
     <div class="controls">
-        <button class="ctrl-btn" @onclick="() => ToggleAll(true)">Expandir todo</button>
-        <button class="ctrl-btn" @onclick="() => ToggleAll(false)">Colapsar todo</button>
+        <button class="ctrl-btn" @onclick="() => ToggleAll(true)">Expand all</button>
+        <button class="ctrl-btn" @onclick="() => ToggleAll(false)">Collapse all</button>
     </div>
 
     @foreach (var topic in Topics)
@@ -52,8 +52,8 @@
     }
 
     <div class="total-bar">
-        <span>Progreso de la sesión</span>
-        <strong>@((phaseStates.Values.Count(v => v) * 100) / Topics.Count)% Revisado</strong>
+        <span>Session progress</span>
+        <strong>@((phaseStates.Values.Count(v => v) * 100) / Topics.Count)% Reviewed</strong>
     </div>
 </div>
 
@@ -66,74 +66,116 @@
         Topics = new List<DevOpsTopic>
         {
             new DevOpsTopic {
-                Id = 0, Title = "The Hook: DevSecOps 3-Layer", Icon = "🎯", Duration = "~2 min",
+                Id = 0, Title = "The hook: DevSecOps 3-layer", Icon = "🎯", Duration = "~2 min",
                 ColorHex = "#EEEDFE", TextColorHex = "#3C3489",
-                Chips = new() { new(".NET 10", "purple"), new("Terraform", "amber"), new("Kubernetes", "blue") },
+                Chips = new() {
+                    new("Overview", "purple"),
+                    new("Value prop", "blue")
+                },
                 TalkingPoints = new() {
-                    "Apertura: 'Este lab demuestra un ciclo de vida completo: desde el commit hasta un cluster k3d con seguridad automatizada en cada paso'.",
-                    "Estructura del Repo: Separación clara de <strong>/app</strong> (código), <strong>/terraform</strong> (IaC) y <strong>/k8s</strong> (manifiestos)."
+                    "<strong>Opening line:</strong> \"This is Kleva DevOps Lab — a cloud-native platform demonstrating a complete DevSecOps pipeline end to end. Every push to master triggers three security layers, two infrastructure modules, a live Kubernetes cluster, and a fully instrumented observability stack. Zero manual steps.\"",
+                    "<strong>Why it matters:</strong> Lead with the outcome, not the tools. The interviewer wants to know: can you build something that works in production? This project answers that in the first 30 seconds.",
+                    "<strong>Stack headline:</strong> \".NET 10 — Kubernetes with k3d — Terraform with remote state on HCP Cloud — Prometheus and Grafana. All wired together through GitHub Actions.\""
                 }
             },
+
             new DevOpsTopic {
-                Id = 1, Title = "App: .NET 10 Cloud-Native", Icon = "🧩", Duration = "~5 min",
+                Id = 1, Title = "App: .NET 10 cloud-native", Icon = "🧩", Duration = "~5 min",
                 ColorHex = "#E6F1FB", TextColorHex = "#185FA5",
-                Chips = new() { new("Minimal API", "blue"), new("Unit Testing", "green"), new("HealthChecks", "teal") },
+                Chips = new() {
+                    new(".NET 10", "blue"),
+                    new("Prometheus", "teal"),
+                    new("SRE RED", "teal")
+                },
                 TalkingPoints = new() {
-                    "La aplicación es una Minimal API intencionalmente ligera para priorizar la visibilidad del pipeline.",
-                    "Integración nativa de <strong>dotnet test</strong> como el primer 'Gate' del CI.",
-                    "Exposición de métricas para el stack de observabilidad (Prometheus)."
+                    "<strong>What it is:</strong> \"The application is a minimal .NET 10 server with three endpoints. <code>/</code> serves an HTML UI showing version, environment and live uptime. <code>/health</code> is the Kubernetes liveness probe. <code>/metrics</code> is the Prometheus scrape endpoint.\"",
+                    "<strong>Instrumentation:</strong> \"The app follows the SRE RED pattern: a Counter for total requests by endpoint and status code, a Histogram for request latency with buckets from 5ms to 2s for p95 calculation, a Gauge for active requests that rises and falls with load, and a Gauge for uptime updated every 5 seconds.\"",
+                    "<strong>Cloud-native signals:</strong> Highlight the pod annotations — <code>prometheus.io/scrape: true</code>, port and path — that enable automatic Prometheus discovery without any manual configuration."
                 }
             },
+
             new DevOpsTopic {
-                Id = 2, Title = "CI: Validation & Quality", Icon = "⚙️", Duration = "~8 min",
+                Id = 2, Title = "CI: validation & quality", Icon = "⚙️", Duration = "~8 min",
                 ColorHex = "#E1F5EE", TextColorHex = "#0F6E56",
-                Chips = new() { new("GitHub Actions", "teal"), new("SonarCloud", "blue"), new("Snyk", "purple") },
-                TalkingPoints = new() {
-                    "<strong>Build & Restore:</strong> Uso de caché de NuGet para reducir tiempos de ejecución.",
-                    "<strong>SonarCloud:</strong> Análisis estático (SAST) para detectar deuda técnica y bugs.",
-                    "<strong>Snyk SCA:</strong> Escaneo de dependencias en busca de CVEs conocidos."
+                Chips = new() {
+                    new("GitHub Actions", "teal"),
+                    new("Snyk SCA", "amber"),
+                    new("SonarCloud", "amber")
                 },
-                Warning = "Si el <strong>Quality Gate</strong> de SonarCloud falla, el proceso se detiene automáticamente."
+                TalkingPoints = new() {
+                    "<strong>Trigger:</strong> \"Every push to master kicks off the CI workflow. The runner sets up .NET 10, restores NuGet dependencies, compiles in Release mode, and runs unit tests.\"",
+                    "<strong>Snyk SCA:</strong> \"After the build, Snyk performs software composition analysis on the <code>.csproj</code> — scanning all dependencies for known CVEs with high severity or above. If Snyk fails, the pipeline stops. Nothing moves forward.\"",
+                    "<strong>SonarCloud SAST:</strong> \"If Snyk passes, SonarCloud runs static analysis using the <code>sonar-project.properties</code> config. It checks code quality, maintainability, and security hotspots in the C# codebase. Quality gate must pass before CI is marked green.\"",
+                    "<strong>Key point:</strong> Each step only runs if the previous one passed — build → test → SCA → SAST. This is shift-left security: issues are caught before they ever reach the cluster."
+                },
+                Warning = "If the <strong>SonarCloud Quality Gate</strong> fails, the pipeline stops automatically. Nothing proceeds to CodeQL or CD."
             },
+
             new DevOpsTopic {
-                Id = 3, Title = "Docker: Multi-stage & Security", Icon = "📦", Duration = "~5 min",
+                Id = 3, Title = "Docker: multi-stage & security", Icon = "📦", Duration = "~5 min",
                 ColorHex = "#FAECE7", TextColorHex = "#993C1D",
-                Chips = new() { new("Multi-stage", "coral"), new("Snyk Container", "purple"), new("Distroless-ready", "gray") },
-                TalkingPoints = new() {
-                    "Reducción de superficie de ataque: El SDK solo existe en el stage de build.",
-                    "Imagen final basada en <strong>aspnet:10.0-alpine</strong> (~120MB) para máxima eficiencia.",
-                    "Escaneo de Snyk directamente sobre las capas de la imagen antes del push al registry."
-                }
-            },
-            new DevOpsTopic {
-                Id = 4, Title = "CodeQL: Semantic Security", Icon = "🛡️", Duration = "~5 min",
-                ColorHex = "#FCEBEB", TextColorHex = "#A32D2D",
-                Chips = new() { new("GHAS", "coral"), new("Semantic Scan", "blue") },
-                TalkingPoints = new() {
-                    "Análisis profundo: CodeQL construye un modelo de base de datos de tu código para hallar vulnerabilidades lógicas.",
-                    "Integración con <strong>GitHub Advanced Security</strong> para trazabilidad en el tab de Security."
-                }
-            },
-            new DevOpsTopic {
-                Id = 5, Title = "IaC: Terraform Modular", Icon = "🏗️", Duration = "~7 min",
-                ColorHex = "#FAEEDA", TextColorHex = "#854F0B",
-                Chips = new() { new("Remote State", "amber"), new("Helm Provider", "purple"), new("Terraform Cloud", "blue") },
-                TalkingPoints = new() {
-                    "Estado remoto persistido para evitar colisiones y permitir auditoría.",
-                    "Uso del <strong>Helm Provider</strong> para desplegar Grafana y servicios de soporte como infraestructura.",
-                    "Variables inyectadas dinámicamente desde secretos de GitHub para evitar leaks."
-                }
-            },
-            new DevOpsTopic {
-                Id = 6, Title = "CD: Kubernetes Deployment", Icon = "🚀", Duration = "~8 min",
-                ColorHex = "#EAF3DE", TextColorHex = "#3B6D11",
-                Chips = new() { new("k3d", "green"), new("Manifests", "blue"), new("Namespaces", "teal") },
-                TalkingPoints = new() {
-                    "Despliegue híbrido: <code>terraform apply</code> para base e infraestructura + <code>kubectl apply</code> para la aplicación.",
-                    "Uso de <strong>k3d</strong> para simular un ambiente productivo real dentro del runner.",
-                    "Verificación de salud: El pipeline espera a que los pods estén <code>Ready</code> antes de marcar éxito."
+                Chips = new() {
+                    new("Multi-stage", "coral"),
+                    new("Snyk container", "amber"),
+                    new("Minimal image", "coral")
                 },
-                Warning = "Siempre aplica los <strong>Secrets</strong> antes que los Deployments para evitar CrashLoopBackOff."
+                TalkingPoints = new() {
+                    "<strong>Multi-stage build:</strong> \"The Dockerfile uses a multi-stage build. The first stage compiles and publishes the .NET app. The second stage copies only the published output into a minimal runtime image — no SDK, no build tools, no extra attack surface.\"",
+                    "<strong>Image security:</strong> \"Snyk also scans the container image for OS-level vulnerabilities in the base image layers. This catches issues that dependency scanning alone would miss.\"",
+                    "<strong>Production readiness:</strong> \"The final image is lean, secure, and tagged for deployment. It exposes port 80 and runs as a non-root user — production defaults from day one.\""
+                }
+            },
+
+            new DevOpsTopic {
+                Id = 4, Title = "CodeQL: semantic security", Icon = "🛡️", Duration = "~5 min",
+                ColorHex = "#FCEBEB", TextColorHex = "#A32D2D",
+                Chips = new() {
+                    new("GHAS", "coral"),
+                    new("SAST", "purple"),
+                    new("security-extended", "purple")
+                },
+                TalkingPoints = new() {
+                    "<strong>Trigger:</strong> \"CodeQL only runs when CI succeeds. This avoids wasting runner minutes on broken builds and ensures analysis runs on code that already compiles and passes tests.\"",
+                    "<strong>Query suites:</strong> \"The workflow runs two query suites: <code>security-extended</code> and <code>security-and-quality</code>. These go deeper than SonarCloud — they detect semantic vulnerabilities like unsafe deserialization, path traversal, and injection patterns in C#.\"",
+                    "<strong>GitHub Security tab:</strong> \"Findings are pushed directly to the Security tab of the repository — a centralized audit trail showing every vulnerability detected, when, and by which commit. This is GitHub Advanced Security in action.\""
+                }
+            },
+
+            new DevOpsTopic {
+                Id = 5, Title = "IaC: Terraform modular", Icon = "🏗️", Duration = "~7 min",
+                ColorHex = "#FAEEDA", TextColorHex = "#854F0B",
+                Chips = new() {
+                    new("HCP Cloud", "amber"),
+                    new("Module k8s", "teal"),
+                    new("Module monitoring", "teal"),
+                    new("Helm", "green")
+                },
+                TalkingPoints = new() {
+                    "<strong>Architecture:</strong> \"The Terraform config is split into a root orchestrator and two child modules. The root <code>main.tf</code> calls the modules in sequence — first <code>k8s</code>, then <code>monitoring</code> with an explicit <code>depends_on</code>.\"",
+                    "<strong>Module k8s:</strong> \"Creates the <code>app</code> and <code>monitoring</code> namespaces in the cluster, and provisions the ConfigMaps with runtime environment variables for the .NET app.\"",
+                    "<strong>Module monitoring:</strong> \"Deploys Grafana via Helm Chart. The admin password never touches any YAML file — it lives in HCP Terraform Variables as a sensitive variable, workspace Demo01, organization Hyrule-Nexus. Terraform injects it into the cluster as a Kubernetes Secret, and Grafana reads it with <code>secretKeyRef</code>.\"",
+                    "<strong>Remote state:</strong> \"All infrastructure state lives remotely in HCP Cloud with automatic locking. No local <code>terraform.tfstate</code> files, no state conflicts, collaborative by default.\""
+                },
+                Warning = "The <code>grafana_admin_password</code> variable has no default — it must be set in HCP Terraform Variables or the apply will fail. Never add a default value for sensitive variables."
+            },
+
+            new DevOpsTopic {
+                Id = 6, Title = "CD: Kubernetes deployment", Icon = "🚀", Duration = "~8 min",
+                ColorHex = "#EAF3DE", TextColorHex = "#3B6D11",
+                Chips = new() {
+                    new("k3d", "green"),
+                    new("kubectl", "blue"),
+                    new("Prometheus", "teal"),
+                    new("Grafana", "green")
+                },
+                TalkingPoints = new() {
+                    "<strong>CD trigger:</strong> \"The CD workflow fires only when CodeQL completes successfully. This is the final gate — no deployment happens unless build, tests, Snyk, SonarCloud, and CodeQL all passed.\"",
+                    "<strong>Cluster setup:</strong> \"The first step creates a k3d cluster with a load balancer on port 8080, simulating a production Kubernetes environment inside the GitHub runner — full API server, etcd, and ingress.\"",
+                    "<strong>Deployment sequence:</strong> \"Terraform apply runs first — provisions namespaces and Grafana. Then <code>kubectl apply</code> deploys the application manifests: the Secret with <code>APP_SECRET_KEY</code>, the ConfigMap with runtime variables, and the Deployment with liveness and readiness probes pointing to <code>/health</code>.\"",
+                    "<strong>Observability:</strong> \"Prometheus autodiscovers the app pod via annotations and starts scraping <code>/metrics</code>. Grafana loads three ConfigMaps automatically — datasource, dashboard provider, and the <code>kleva-app</code> dashboard JSON with five panels: total requests, uptime, request rate, p95 latency, and active requests. No manual Grafana configuration needed.\"",
+                    "<strong>Closing line:</strong> \"From a single git push to a running cluster with metrics visible in Grafana — fully automated. That is the complete Kleva DevOps Lab pipeline.\""
+                },
+                Warning = "Always apply <strong>Secrets before Deployments</strong> to avoid <code>CrashLoopBackOff</code> caused by missing environment variables at pod startup."
             }
         };
 
