@@ -2,7 +2,7 @@
 using System.Xml;
 using static HNHQ.Components.Pages.Home;
 
-namespace Kleva_Guide.Models
+namespace HNHQ.Models
 {
     public class NewsService
     {

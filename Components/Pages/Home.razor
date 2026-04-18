@@ -134,18 +134,58 @@
 
     private string ExtractImageUrl(SyndicationItem item)
     {
-        // Busca en enclosure, luego en media:content, luego en el HTML
+        // 1. Intento por Enclosure (estándar antiguo)
         var url = item.Links.FirstOrDefault(l => l.RelationshipType == "enclosure")?.Uri.ToString();
+
+        // 2. Intento por Media RSS (El estándar de Yahoo que usan casi todos)
         if (string.IsNullOrEmpty(url))
         {
-            var ext = item.ElementExtensions.FirstOrDefault(e => e.OuterName == "content" && e.OuterNamespace.Contains("yahoo"));
-            if (ext != null) url = ext.GetObject<XmlElement>().GetAttribute("url");
+            // Buscamos la extensión que contenga la URL de la imagen
+            var mediaExtension = item.ElementExtensions
+                .FirstOrDefault(e => e.OuterName == "content" && e.OuterNamespace.Contains("mrss"));
+        
+            if (mediaExtension != null)
+            {
+                url = mediaExtension.GetObject<System.Xml.XmlElement>().GetAttribute("url");
+            }
         }
-        if (string.IsNullOrEmpty(url)) url = System.Text.RegularExpressions.Regex.Match(item.Summary?.Text ?? "", "<img.+?src=[\"'](.+?)[\"'].*?>").Groups[1].Value;
-        return url ?? "";
+
+        // 3. Si sigue vacío, buscamos la etiqueta <img> dentro del texto del resumen
+        if (string.IsNullOrEmpty(url))
+        {
+            string content = item.Summary?.Text ?? "";
+            var match = System.Text.RegularExpressions.Regex.Match(content, "<img.+?src=[\"'](.+?)[\"'].*?>");
+            if (match.Success) url = match.Groups[1].Value;
+        }
+
+        // Si todo falla, devuelve el placeholder que ya viste
+        return !string.IsNullOrEmpty(url) ? url : "https://via.placeholder.com/400x200/161616/03dac6?text=NEXUS+INTEL";
     }
 
-    private string StripHtml(string html) => System.Text.RegularExpressions.Regex.Replace(html, "<.*?>", string.Empty);
-    private string Truncate(string text, int len) => text.Length <= len ? text : text.Substring(0, len) + "...";
-    public void Dispose() => _timer?.Dispose();
+    private static string StripHtml(string input)
+    {
+        if (string.IsNullOrEmpty(input)) return string.Empty;
+        // Remove tags
+        var noTags = System.Text.RegularExpressions.Regex.Replace(input, "<.*?>", string.Empty);
+        // Decode HTML entities (use fully-qualified name to avoid needing an extra using)
+        return System.Net.WebUtility.HtmlDecode(noTags).Trim();
+    }
+
+    private static string Truncate(string input, int maxLength)
+    {
+        if (string.IsNullOrEmpty(input)) return string.Empty;
+        if (maxLength <= 0) return string.Empty;
+        if (input.Length <= maxLength) return input;
+        // Reserve room for ellipsis
+        const string ellipsis = "…";
+        var allowed = Math.Max(0, maxLength - ellipsis.Length);
+        return input.Substring(0, allowed).TrimEnd() + ellipsis;
+    }
+
+    // Implement IDisposable to satisfy the interface declared with @implements IDisposable.
+    public void Dispose()
+    {
+        _timer?.Dispose();
+        _timer = null;
+    }
 }
