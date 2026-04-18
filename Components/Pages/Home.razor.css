@@ -1,0 +1,261 @@
+﻿/* --- Contenedor Base --- */
+.home-container {
+    padding: 2rem;
+    max-width: 1300px;
+    margin: 0 auto;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* --- Hero Section con Gradiente Corregido --- */
+.hero {
+    border-bottom: 1px solid #333;
+    padding-bottom: 2rem;
+    margin-bottom: 3rem;
+}
+
+.badge-live {
+    background: #ff0000;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 3px 10px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+    /* Animación de pulso para el badge */
+    .badge-live::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        background: white;
+        border-radius: 50%;
+        animation: pulse-dot 1.5s infinite;
+    }
+
+@keyframes pulse-dot {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.hero h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #ffffff, #888888);
+    background-clip: text; /* Estándar */
+    -webkit-background-clip: text; /* Para navegadores basados en Chrome */
+    color: transparent; /* Importante para que se vea el gradiente */
+}
+
+/* --- Grid Principal --- */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 2.5rem;
+}
+
+/* --- News Cards (Stream Principal) --- */
+.news-card {
+    background: #161616;
+    border: 1px solid #282828;
+    border-radius: 14px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+    .news-card:hover {
+        transform: translateY(-5px);
+        border-color: #444;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    }
+
+.card-horizontal {
+    display: flex;
+    align-items: stretch;
+    min-height: 200px;
+}
+
+.card-img-container {
+    width: 240px;
+    min-width: 240px;
+    background: #0a0a0a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid #282828;
+}
+
+    .card-img-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+.news-card:hover .card-img-container img {
+    transform: scale(1.1);
+}
+
+/* Fallback para cuando no hay imagen */
+.placeholder-img {
+    color: #333;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.card-content {
+    padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-tag {
+    font-size: 9px;
+    text-transform: uppercase;
+    font-weight: 900;
+    padding: 2px 12px;
+    border-radius: 4px;
+    background: #333;
+    color: #eee;
+    margin-bottom: 10px;
+    width: fit-content;
+}
+
+/* Bordes de categoría dinámicos */
+.news-card.security {
+    border-left: 4px solid #ff4444;
+}
+
+.news-card.geek {
+    border-left: 4px solid #bb86fc;
+}
+
+.news-card.general {
+    border-left: 4px solid #03dac6;
+}
+
+.timestamp {
+    font-size: 11px;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.card-content h3 {
+    margin: 5px 0 12px 0;
+    font-size: 1.3rem;
+    color: #fff;
+    line-height: 1.2;
+}
+
+.card-content p {
+    color: #999;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    flex-grow: 1;
+}
+
+/* --- Sidebar: CVE & Geek Pulse Live --- */
+.side-block {
+    background: #111;
+    border: 1px solid #222;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+}
+
+    .side-block h3 {
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+/* Items dinámicos del sidebar */
+.cve-item, .geek-pulse-item {
+    background: #1a1a1a;
+    border: 1px solid #282828;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    transition: background 0.2s;
+}
+
+    .cve-item:hover, .geek-pulse-item:hover {
+        background: #222;
+    }
+
+.cve-id {
+    color: #ff4444;
+    font-size: 10px;
+    font-weight: bold;
+    font-family: monospace;
+}
+
+.cve-item p, .geek-pulse-item p {
+    font-size: 0.85rem;
+    margin: 5px 0;
+    color: #ccc;
+    line-height: 1.4;
+}
+
+.mini-link {
+    font-size: 10px;
+    color: #03dac6;
+    text-decoration: none;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+    .mini-link:hover {
+        text-decoration: underline;
+    }
+
+.geek-box {
+    border-top: 3px solid #bb86fc;
+}
+
+.cve-tracker {
+    border-top: 3px solid #ff4444;
+}
+
+/* --- Responsive Layout --- */
+@media (max-width: 1100px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 650px) {
+    .card-horizontal {
+        flex-direction: column;
+    }
+
+    .card-img-container {
+        width: 100%;
+        min-width: 100%;
+        height: 200px;
+        border-right: none;
+        border-bottom: 1px solid #282828;
+    }
+
+    .hero h1 {
+        font-size: 2rem;
+    }
+}

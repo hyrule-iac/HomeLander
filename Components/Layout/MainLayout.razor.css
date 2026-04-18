@@ -1,0 +1,104 @@
+.page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    /* Fondo base para evitar destellos blancos durante la carga */
+    background-color: #121212;
+}
+
+main {
+    flex: 1;
+    background-color: #121212; /* Fondo oscuro que coincide con tu guía */
+}
+
+/* Sidebar con degradado más oscuro y profesional */
+.sidebar {
+    background-image: linear-gradient(180deg, #0a0a0a 0%, #1a0521 70%);
+}
+
+/* Barra superior (Top Row) */
+.top-row {
+    background-color: #1a1a1a;
+    border-bottom: 1px solid #333333;
+    justify-content: flex-end;
+    height: 3.5rem;
+    display: flex;
+    align-items: center;
+}
+
+    /* Estilos para los links en la barra superior */
+    .top-row ::deep a, .top-row ::deep .btn-link {
+        white-space: nowrap;
+        margin-left: 1.5rem;
+        text-decoration: none;
+        color: #a0a0a0; /* Gris suave */
+    }
+
+        .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
+            text-decoration: underline;
+            color: #ffffff;
+        }
+
+/* Contenedor del contenido principal */
+article {
+    background-color: #121212;
+}
+
+@media (max-width: 640.98px) {
+    .top-row {
+        justify-content: space-between;
+    }
+
+        .top-row ::deep a, .top-row ::deep .btn-link {
+            margin-left: 0;
+        }
+}
+
+@media (min-width: 641px) {
+    .page {
+        flex-direction: row;
+    }
+
+    .sidebar {
+        width: 250px;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+        border-right: 1px solid #2d2d2d;
+    }
+
+    .top-row {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    /* Padding consistente para el contenido */
+    .top-row, article {
+        padding-left: 2rem !important;
+        padding-right: 1.5rem !important;
+    }
+}
+
+/* Interfaz de error de Blazor (ajustada a modo oscuro) */
+#blazor-error-ui {
+    background: #332200;
+    color: #ffd700;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+        color: #ffffff;
+    }

@@ -1,0 +1,151 @@
+﻿@page "/kleva-devops"
+@rendermode InteractiveServer
+@using Kleva_Guide.Models
+
+<div class="container">
+    <div class="header">
+        <h1>Guía de presentación — kleva-devops-lab</h1>
+        <p>@Topics.Count secciones · ~45 min · Stack completo · Perspectiva del dev que te contrata</p>
+    </div>
+
+    <div class="controls">
+        <button class="ctrl-btn" @onclick="() => ToggleAll(true)">Expandir todo</button>
+        <button class="ctrl-btn" @onclick="() => ToggleAll(false)">Colapsar todo</button>
+    </div>
+
+    @foreach (var topic in Topics)
+    {
+        <div class="phase">
+            <div class="phase-header" @onclick="() => TogglePhase(topic.Id)">
+                <div class="phase-num" style="background:@topic.ColorHex; color:@topic.TextColorHex;">@topic.Id</div>
+                <span class="phase-icon">@topic.Icon</span>
+                <span class="phase-title">@topic.Title</span>
+                <span class="phase-time">@topic.Duration</span>
+                <span class="phase-arrow @(IsPhaseOpen(topic.Id) ? "open" : "")">▶</span>
+            </div>
+
+            <div class="phase-body @(IsPhaseOpen(topic.Id) ? "open" : "")">
+                <div class="chips">
+                    @foreach (var chip in topic.Chips)
+                    {
+                        <span class="chip @chip.CssClass">@chip.Label</span>
+                    }
+                </div>
+
+                <div class="section-label">Talking Points & Workflow</div>
+                @foreach (var point in topic.TalkingPoints)
+                {
+                    <div class="talking-point">
+                        <div class="bullet" style="background:@topic.TextColorHex;"></div>
+                        <p>@((MarkupString)point)</p>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(topic.Warning))
+                {
+                    <div class="warn-box">
+                        <p><strong>💡 Pro Tip / Warning:</strong> @((MarkupString)topic.Warning)</p>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <div class="total-bar">
+        <span>Progreso de la sesión</span>
+        <strong>@((phaseStates.Values.Count(v => v) * 100) / Topics.Count)% Revisado</strong>
+    </div>
+</div>
+
+@code {
+    private Dictionary<int, bool> phaseStates = new();
+    private List<DevOpsTopic> Topics = new();
+
+    protected override void OnInitialized()
+    {
+        Topics = new List<DevOpsTopic>
+        {
+            new DevOpsTopic {
+                Id = 0, Title = "The Hook: DevSecOps 3-Layer", Icon = "🎯", Duration = "~2 min",
+                ColorHex = "#EEEDFE", TextColorHex = "#3C3489",
+                Chips = new() { new(".NET 10", "purple"), new("Terraform", "amber"), new("Kubernetes", "blue") },
+                TalkingPoints = new() {
+                    "Apertura: 'Este lab demuestra un ciclo de vida completo: desde el commit hasta un cluster k3d con seguridad automatizada en cada paso'.",
+                    "Estructura del Repo: Separación clara de <strong>/app</strong> (código), <strong>/terraform</strong> (IaC) y <strong>/k8s</strong> (manifiestos)."
+                }
+            },
+            new DevOpsTopic {
+                Id = 1, Title = "App: .NET 10 Cloud-Native", Icon = "🧩", Duration = "~5 min",
+                ColorHex = "#E6F1FB", TextColorHex = "#185FA5",
+                Chips = new() { new("Minimal API", "blue"), new("Unit Testing", "green"), new("HealthChecks", "teal") },
+                TalkingPoints = new() {
+                    "La aplicación es una Minimal API intencionalmente ligera para priorizar la visibilidad del pipeline.",
+                    "Integración nativa de <strong>dotnet test</strong> como el primer 'Gate' del CI.",
+                    "Exposición de métricas para el stack de observabilidad (Prometheus)."
+                }
+            },
+            new DevOpsTopic {
+                Id = 2, Title = "CI: Validation & Quality", Icon = "⚙️", Duration = "~8 min",
+                ColorHex = "#E1F5EE", TextColorHex = "#0F6E56",
+                Chips = new() { new("GitHub Actions", "teal"), new("SonarCloud", "blue"), new("Snyk", "purple") },
+                TalkingPoints = new() {
+                    "<strong>Build & Restore:</strong> Uso de caché de NuGet para reducir tiempos de ejecución.",
+                    "<strong>SonarCloud:</strong> Análisis estático (SAST) para detectar deuda técnica y bugs.",
+                    "<strong>Snyk SCA:</strong> Escaneo de dependencias en busca de CVEs conocidos."
+                },
+                Warning = "Si el <strong>Quality Gate</strong> de SonarCloud falla, el proceso se detiene automáticamente."
+            },
+            new DevOpsTopic {
+                Id = 3, Title = "Docker: Multi-stage & Security", Icon = "📦", Duration = "~5 min",
+                ColorHex = "#FAECE7", TextColorHex = "#993C1D",
+                Chips = new() { new("Multi-stage", "coral"), new("Snyk Container", "purple"), new("Distroless-ready", "gray") },
+                TalkingPoints = new() {
+                    "Reducción de superficie de ataque: El SDK solo existe en el stage de build.",
+                    "Imagen final basada en <strong>aspnet:10.0-alpine</strong> (~120MB) para máxima eficiencia.",
+                    "Escaneo de Snyk directamente sobre las capas de la imagen antes del push al registry."
+                }
+            },
+            new DevOpsTopic {
+                Id = 4, Title = "CodeQL: Semantic Security", Icon = "🛡️", Duration = "~5 min",
+                ColorHex = "#FCEBEB", TextColorHex = "#A32D2D",
+                Chips = new() { new("GHAS", "coral"), new("Semantic Scan", "blue") },
+                TalkingPoints = new() {
+                    "Análisis profundo: CodeQL construye un modelo de base de datos de tu código para hallar vulnerabilidades lógicas.",
+                    "Integración con <strong>GitHub Advanced Security</strong> para trazabilidad en el tab de Security."
+                }
+            },
+            new DevOpsTopic {
+                Id = 5, Title = "IaC: Terraform Modular", Icon = "🏗️", Duration = "~7 min",
+                ColorHex = "#FAEEDA", TextColorHex = "#854F0B",
+                Chips = new() { new("Remote State", "amber"), new("Helm Provider", "purple"), new("Terraform Cloud", "blue") },
+                TalkingPoints = new() {
+                    "Estado remoto persistido para evitar colisiones y permitir auditoría.",
+                    "Uso del <strong>Helm Provider</strong> para desplegar Grafana y servicios de soporte como infraestructura.",
+                    "Variables inyectadas dinámicamente desde secretos de GitHub para evitar leaks."
+                }
+            },
+            new DevOpsTopic {
+                Id = 6, Title = "CD: Kubernetes Deployment", Icon = "🚀", Duration = "~8 min",
+                ColorHex = "#EAF3DE", TextColorHex = "#3B6D11",
+                Chips = new() { new("k3d", "green"), new("Manifests", "blue"), new("Namespaces", "teal") },
+                TalkingPoints = new() {
+                    "Despliegue híbrido: <code>terraform apply</code> para base e infraestructura + <code>kubectl apply</code> para la aplicación.",
+                    "Uso de <strong>k3d</strong> para simular un ambiente productivo real dentro del runner.",
+                    "Verificación de salud: El pipeline espera a que los pods estén <code>Ready</code> antes de marcar éxito."
+                },
+                Warning = "Siempre aplica los <strong>Secrets</strong> antes que los Deployments para evitar CrashLoopBackOff."
+            }
+        };
+
+        foreach (var t in Topics) phaseStates[t.Id] = false;
+    }
+
+    private void TogglePhase(int id) => phaseStates[id] = !phaseStates.GetValueOrDefault(id);
+
+    private bool IsPhaseOpen(int id) => phaseStates.GetValueOrDefault(id);
+
+    private void ToggleAll(bool open)
+    {
+        foreach (var key in phaseStates.Keys.ToList()) phaseStates[key] = open;
+    }
+}

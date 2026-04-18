@@ -1,0 +1,151 @@
+﻿@page "/"
+@using System.ServiceModel.Syndication
+@using System.Xml
+@using Microsoft.Extensions.Caching.Memory
+@inject IMemoryCache Cache
+@implements IDisposable
+
+<div class="home-container">
+    <header class="hero">
+        <div class="hero-content">
+            <span class="badge-live">LIVE COMMAND CENTER</span>
+            <h1>Hyrule-Nexus Intelligence</h1>
+            <p>Cloud Security & Geek Culture Monitoring</p>
+        </div>
+    </header>
+
+    <div class="dashboard-grid">
+        <section class="feed-section">
+            <h2 class="section-title"><span class="icon">📰</span> Main Intel Stream</h2>
+            @if (IsLoading)
+            {
+                <div class="loading-state">Sincronizando feeds...</div>
+            }
+            else
+            {
+                @foreach (var news in NewsItems)
+                {
+                    <article class="news-card @news.Category.ToLower()">
+                        <div class="card-horizontal">
+                            <div class="card-img-container">
+                                @if (!string.IsNullOrEmpty(news.ImageUrl))
+                                {
+                                    <img src="@news.ImageUrl" alt="intel" />
+                                }
+                            </div>
+                            <div class="card-content">
+                                <div class="card-tag">@news.Category</div>
+                                <span class="timestamp">@news.PublishDate.ToString("HH:mm")</span>
+                                <h3>@news.Title</h3>
+                                <p>@news.Summary</p>
+                                <div class="card-footer">
+                                    <span class="source">@news.Source</span>
+                                    <a href="@news.Link" target="_blank" class="read-more">Analyze →</a>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                }
+            }
+        </section>
+
+        <aside class="sidebar-feed">
+            <div class="side-block cve-tracker">
+                <h3><span class="icon">🛡️</span> Live CVE Alerts</h3>
+                @foreach (var cve in CveItems)
+                {
+                    <div class="cve-item high">
+                        <span class="cve-id">ALERT</span>
+                        <p><strong>@cve.Title</strong></p>
+                        <a href="@cve.Link" target="_blank" class="mini-link">Details</a>
+                    </div>
+                }
+            </div>
+
+            <div class="side-block geek-box">
+                <h3><span class="icon">🍿</span> Geek Pulse Live</h3>
+                @foreach (var geek in GeekItems)
+                {
+                    <div class="geek-pulse-item">
+                        <p>@geek.Title</p>
+                        <a href="@geek.Link" target="_blank" class="mini-link">View Intel</a>
+                    </div>
+                }
+            </div>
+        </aside>
+    </div>
+</div>
+
+@code {
+    private List<NewsItem> NewsItems = new();
+    private List<NewsItem> CveItems = new();
+    private List<NewsItem> GeekItems = new();
+    private bool IsLoading = true;
+    private System.Threading.Timer? _timer;
+
+    public class NewsItem
+    {
+        public string Title { get; set; } = "";
+        public string Summary { get; set; } = "";
+        public string Link { get; set; } = "";
+        public string ImageUrl { get; set; } = "";
+        public string Source { get; set; } = "";
+        public string Category { get; set; } = "";
+        public DateTime PublishDate { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAllFeeds();
+        _timer = new System.Threading.Timer(async _ => await InvokeAsync(async () => { await LoadAllFeeds(); StateHasChanged(); }), null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
+    }
+
+    private async Task LoadAllFeeds()
+    {
+        IsLoading = true;
+        // CVEs de NIST/CISA
+        CveItems = await FetchFeed("https://www.cisa.gov/cybersecurity-advisories/all.xml", "Security", 3);
+        // Geek Pulse: Bounding Into Comics (Más amigable para imágenes)
+        GeekItems = await FetchFeed("https://boundingintocomics.com/feed/", "Geek", 3);
+        // Feed Principal
+        NewsItems = await FetchFeed("https://www.theverge.com/rss/index.xml", "General", 5);
+        IsLoading = false;
+    }
+
+    private async Task<List<NewsItem>> FetchFeed(string url, string category, int count)
+    {
+        try
+        {
+            using var reader = XmlReader.Create(url);
+            var feed = SyndicationFeed.Load(reader);
+            return feed.Items.Take(count).Select(item => new NewsItem
+            {
+                Title = item.Title.Text,
+                Summary = Truncate(StripHtml(item.Summary?.Text ?? ""), 120),
+                Link = item.Links.FirstOrDefault()?.Uri.ToString() ?? "",
+                PublishDate = item.PublishDate.DateTime,
+                Category = category,
+                Source = feed.Title.Text,
+                ImageUrl = ExtractImageUrl(item)
+            }).ToList();
+        }
+        catch { return new List<NewsItem>(); }
+    }
+
+    private string ExtractImageUrl(SyndicationItem item)
+    {
+        // Busca en enclosure, luego en media:content, luego en el HTML
+        var url = item.Links.FirstOrDefault(l => l.RelationshipType == "enclosure")?.Uri.ToString();
+        if (string.IsNullOrEmpty(url))
+        {
+            var ext = item.ElementExtensions.FirstOrDefault(e => e.OuterName == "content" && e.OuterNamespace.Contains("yahoo"));
+            if (ext != null) url = ext.GetObject<XmlElement>().GetAttribute("url");
+        }
+        if (string.IsNullOrEmpty(url)) url = System.Text.RegularExpressions.Regex.Match(item.Summary?.Text ?? "", "<img.+?src=[\"'](.+?)[\"'].*?>").Groups[1].Value;
+        return url ?? "";
+    }
+
+    private string StripHtml(string html) => System.Text.RegularExpressions.Regex.Replace(html, "<.*?>", string.Empty);
+    private string Truncate(string text, int len) => text.Length <= len ? text : text.Substring(0, len) + "...";
+    public void Dispose() => _timer?.Dispose();
+}
