@@ -7,7 +7,7 @@
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* --- Hero Section con Gradiente Corregido --- */
+/* --- Hero Section --- */
 .hero {
     border-bottom: 1px solid #333;
     padding-bottom: 2rem;
@@ -27,7 +27,6 @@
     gap: 6px;
 }
 
-    /* Animación de pulso para el badge */
     .badge-live::before {
         content: "";
         width: 8px;
@@ -38,26 +37,23 @@
     }
 
 @keyframes pulse-dot {
-    0% {
+    0%, 100% {
         opacity: 1;
     }
 
     50% {
         opacity: 0.3;
     }
-
-    100% {
-        opacity: 1;
-    }
 }
 
 .hero h1 {
     font-size: 2.8rem;
     font-weight: 800;
+    margin: 12px 0;
     background: linear-gradient(90deg, #ffffff, #888888);
-    background-clip: text; /* Estándar */
-    -webkit-background-clip: text; /* Para navegadores basados en Chrome */
-    color: transparent; /* Importante para que se vea el gradiente */
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
 
 /* --- Grid Principal --- */
@@ -67,7 +63,7 @@
     gap: 2.5rem;
 }
 
-/* --- News Cards (Stream Principal) --- */
+/* --- News Cards --- */
 .news-card {
     background: #161616;
     border: 1px solid #282828;
@@ -110,13 +106,28 @@
     transform: scale(1.1);
 }
 
-/* Fallback para cuando no hay imagen */
-.placeholder-img {
-    color: #333;
-    font-size: 12px;
-    font-weight: bold;
-    letter-spacing: 2px;
+/* --- Botón "Analyze" (Corrección de especificidad) --- */
+.feed-section .news-card .read-more {
+    display: inline-flex;
+    align-items: center;
+    background: #222;
+    border: 1px solid #444;
+    color: #fff !important; /* Forza el color blanco sobre el azul de Bootstrap */
+    padding: 6px 14px;
+    font-size: 11px;
+    border-radius: 6px;
+    text-decoration: none !important; /* Elimina subrayado */
+    transition: all 0.2s ease;
+    font-weight: 600;
+    text-transform: uppercase;
 }
+
+    .feed-section .news-card .read-more:hover {
+        background: #03dac6;
+        color: #000 !important;
+        border-color: #03dac6;
+        transform: translateY(-2px);
+    }
 
 .card-content {
     padding: 1.5rem;
@@ -132,12 +143,11 @@
     padding: 2px 12px;
     border-radius: 4px;
     background: #333;
-    color: #eee;
     margin-bottom: 10px;
     width: fit-content;
 }
 
-/* Bordes de categoría dinámicos */
+/* Bordes de categoría */
 .news-card.security {
     border-left: 4px solid #ff4444;
 }
@@ -153,24 +163,36 @@
 .timestamp {
     font-size: 11px;
     color: #555;
-    margin-bottom: 5px;
 }
 
 .card-content h3 {
     margin: 5px 0 12px 0;
     font-size: 1.3rem;
     color: #fff;
-    line-height: 1.2;
 }
 
 .card-content p {
     color: #999;
     font-size: 0.95rem;
-    line-height: 1.6;
     flex-grow: 1;
 }
 
-/* --- Sidebar: CVE & Geek Pulse Live --- */
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #222;
+}
+
+.source {
+    font-size: 11px;
+    font-style: italic;
+    color: #555;
+}
+
+/* --- Sidebar --- */
 .side-block {
     background: #111;
     border: 1px solid #222;
@@ -179,27 +201,21 @@
     margin-bottom: 2rem;
 }
 
-    .side-block h3 {
-        font-size: 1.1rem;
-        margin-bottom: 1.5rem;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
+.cve-tracker {
+    border-top: 3px solid #ff4444;
+}
 
-/* Items dinámicos del sidebar */
+.geek-box {
+    border-top: 3px solid #bb86fc;
+}
+
 .cve-item, .geek-pulse-item {
     background: #1a1a1a;
     border: 1px solid #282828;
     padding: 12px;
     border-radius: 8px;
     margin-bottom: 12px;
-    transition: background 0.2s;
 }
-
-    .cve-item:hover, .geek-pulse-item:hover {
-        background: #222;
-    }
 
 .cve-id {
     color: #ff4444;
@@ -208,34 +224,15 @@
     font-family: monospace;
 }
 
-.cve-item p, .geek-pulse-item p {
-    font-size: 0.85rem;
-    margin: 5px 0;
-    color: #ccc;
-    line-height: 1.4;
-}
-
 .mini-link {
-    font-size: 10px;
     color: #03dac6;
-    text-decoration: none;
+    font-size: 10px;
     font-weight: bold;
+    text-decoration: none;
     text-transform: uppercase;
 }
 
-    .mini-link:hover {
-        text-decoration: underline;
-    }
-
-.geek-box {
-    border-top: 3px solid #bb86fc;
-}
-
-.cve-tracker {
-    border-top: 3px solid #ff4444;
-}
-
-/* --- Responsive Layout --- */
+/* --- Responsive --- */
 @media (max-width: 1100px) {
     .dashboard-grid {
         grid-template-columns: 1fr;
@@ -249,13 +246,8 @@
 
     .card-img-container {
         width: 100%;
-        min-width: 100%;
         height: 200px;
         border-right: none;
         border-bottom: 1px solid #282828;
-    }
-
-    .hero h1 {
-        font-size: 2rem;
     }
 }
