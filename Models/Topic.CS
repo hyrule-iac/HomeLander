@@ -1,4 +1,4 @@
-﻿namespace Kleva_Guide.Models;
+﻿namespace HNHQ.Models;
 
 public class DevOpsTopic
 {

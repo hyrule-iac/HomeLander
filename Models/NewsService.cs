@@ -1,6 +1,6 @@
 ﻿using System.ServiceModel.Syndication;
 using System.Xml;
-using static Kleva_Guide.Components.Pages.Home;
+using static HNHQ.Components.Pages.Home;
 
 namespace Kleva_Guide.Models
 {
