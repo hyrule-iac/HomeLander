@@ -1,0 +1,336 @@
+/* Contenedor principal */
+.container {
+    max-width: 740px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+/* Variables locales (puedes moverlas a :root en app.css si prefieres) */
+.container {
+    /* Darktheme */
+    --bg: #121212; /* Main BG */
+    --bg-secondary: #1e1e1e; /* Fondo de acordeones */
+    --bg-tertiary: #2d2d2d; /* Hover y detalles */
+    --text-primary: #e0e0e0; /* Texto casi blanco */
+    --text-secondary: #a0a0a0; /* Texto gris suave */
+    --border: rgba(255, 255, 255, 0.1); /* Bordes sutiles claros */
+
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    min-height: 100vh;
+    color: var(--text-primary);
+}
+
+/* Ajuste para que el fondo de la página completa sea oscuro */
+:host {
+    display: block;
+    background-color: #121212;
+}
+
+@media (prefers-color-scheme: dark) {
+    .container {
+        --bg: #1c1c1a;
+        --bg-secondary: #252523;
+        --bg-tertiary: #2e2e2b;
+        --text-primary: #f0ede6;
+        --text-secondary: #9a9990;
+        --border: rgba(255,255,255,0.1);
+    }
+}
+
+/* Header */
+.header {
+    margin-bottom: 1.5rem;
+}
+
+    .header h1 {
+        font-size: 22px;
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+    }
+
+    .header p {
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+
+/* Controles */
+.controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.ctrl-btn {
+    font-size: 12px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 0.5px solid var(--border);
+    background: var(--bg);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+    .ctrl-btn:hover {
+        background: var(--bg-secondary);
+    }
+
+/* Fases / Acordeones */
+.phase {
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin-bottom: 0.65rem;
+    overflow: hidden;
+    background: var(--bg);
+}
+
+.phase-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+}
+
+    .phase-header:hover {
+        background: var(--bg-secondary);
+    }
+
+.phase-num {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.phase-icon {
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.phase-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    flex: 1;
+}
+
+.phase-time {
+    font-size: 11px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.phase-arrow {
+    font-size: 10px;
+    color: var(--text-secondary);
+    transition: transform 0.2s;
+    display: inline-block;
+}
+
+    .phase-arrow.open {
+        transform: rotate(90deg);
+    }
+
+/* Cuerpo del acordeón con transición de Blazor */
+.phase-body {
+    padding: 0 16px 16px;
+    display: none;
+}
+
+    .phase-body.open {
+        display: block;
+    }
+
+/* Tipografía y bloques de contenido */
+.section-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 14px 0 8px;
+}
+
+.talking-point {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 7px;
+    align-items: flex-start;
+}
+
+.bullet {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    margin-top: 7px;
+    flex-shrink: 0;
+}
+
+.talking-point p {
+    font-size: 13px;
+    color: var(--text-primary);
+    line-height: 1.65;
+}
+
+/* Tips de colores */
+.tip {
+    border-left: 2px solid;
+    padding: 8px 12px;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    margin-top: 10px;
+}
+
+    .tip p {
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .tip.green {
+        border-color: #639922;
+        background: #EAF3DE;
+        color: #3B6D11;
+    }
+
+    .tip.amber {
+        border-color: #BA7517;
+        background: #FAEEDA;
+        color: #854F0B;
+    }
+
+    .tip.blue {
+        border-color: #185FA5;
+        background: #E6F1FB;
+        color: #0C447C;
+    }
+
+    .tip.purple {
+        border-color: #534AB7;
+        background: #EEEDFE;
+        color: #26215C;
+    }
+
+    .tip.teal {
+        border-color: #0F6E56;
+        background: #E1F5EE;
+        color: #04342C;
+    }
+
+/* Warning Box */
+.warn-box {
+    background: #FCEBEB;
+    border: 0.5px solid #F09595;
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    margin-top: 10px;
+}
+
+    .warn-box p {
+        font-size: 12px;
+        color: #791F1F;
+        line-height: 1.6;
+    }
+
+/* Chips y Tags */
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 8px;
+    margin-bottom: 2px;
+}
+
+.chip {
+    font-size: 11px;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+    .chip.purple {
+        background: #EEEDFE;
+        color: #3C3489;
+    }
+
+    .chip.teal {
+        background: #E1F5EE;
+        color: #085041;
+    }
+
+    .chip.blue {
+        background: #E6F1FB;
+        color: #0C447C;
+    }
+
+    .chip.coral {
+        background: #FAECE7;
+        color: #712B13;
+    }
+
+    .chip.amber {
+        background: #FAEEDA;
+        color: #633806;
+    }
+
+    .chip.green {
+        background: #EAF3DE;
+        color: #3B6D11;
+    }
+
+    .chip.gray {
+        background: var(--bg-secondary);
+        color: var(--text-secondary);
+        border: 0.5px solid var(--border);
+    }
+
+.file-tag {
+    display: inline-block;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    font-size: 11px;
+    background: var(--bg-secondary);
+    border: 0.5px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    color: var(--text-secondary);
+}
+
+/* Flujos (Arrows) */
+.flow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 10px 0;
+}
+
+.flow-step {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 4px;
+}
+
+.flow-arrow {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+/* Diagram wrapper — permite scroll horizontal en móvil si el SVG es muy ancho */
+.diagram-wrap {
+    margin-top: 8px;
+    overflow-x: auto;
+    border-radius: var(--radius-md);
+}
