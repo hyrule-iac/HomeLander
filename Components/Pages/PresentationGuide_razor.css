@@ -9,7 +9,7 @@
 .container {
     /* Darktheme */
     --bg: #121212; /* Main BG */
-    --bg-secondary: #1e1e1e; /* Fondo de acordeones */
+    --bg-secondary: #1e1e1e; /* BG */
     --bg-tertiary: #2d2d2d; /* Hover y detalles */
     --text-primary: #e0e0e0; /* Texto casi blanco */
     --text-secondary: #a0a0a0; /* Texto gris suave */

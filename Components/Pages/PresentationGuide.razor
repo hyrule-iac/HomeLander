@@ -281,7 +281,7 @@
                     "<strong>Cluster setup:</strong> \"The first step creates a k3d cluster with a load balancer on port 8080, simulating a production Kubernetes environment inside the GitHub runner — full API server, etcd, and ingress.\"",
                     "<strong>Deployment sequence:</strong> \"Terraform apply runs first — provisions namespaces and Grafana. Then <code>kubectl apply</code> deploys the application manifests: the Secret with <code>APP_SECRET_KEY</code>, the ConfigMap with runtime variables, and the Deployment with liveness and readiness probes pointing to <code>/health</code>.\"",
                     "<strong>Observability:</strong> \"Prometheus autodiscovers the app pod via annotations and starts scraping <code>/metrics</code>. Grafana loads three ConfigMaps automatically — datasource, dashboard provider, and the <code>kleva-app</code> dashboard JSON with five panels: total requests, uptime, request rate, p95 latency, and active requests. No manual Grafana configuration needed.\"",
-                    "<strong>Closing line:</strong> \"From a single git push to a running cluster with metrics visible in Grafana — fully automated. That is the complete Kleva DevOps Lab pipeline.\""
+                    "<strong>Closing line:</strong> \"From a single git push to a running kluster with metrics visible in Grafana — fully automated. That is the complete Kleva DevOps Lab pipeline.\""
                 },
                 Warning = "Always apply <strong>Secrets before Deployments</strong> to avoid <code>CrashLoopBackOff</code> caused by missing environment variables at pod startup."
             }
