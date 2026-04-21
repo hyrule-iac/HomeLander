@@ -297,7 +297,8 @@
                     "<strong>3. Manual Secret Injection:</strong> Since we are local, we must manually provide the GHCR credentials: <pre>kubectl create secret docker-registry ghcr-secret --docker-server=ghcr.io --docker-username='YOUR_USER' --docker-password='YOUR_TOKEN' --namespace=app</pre>",
                     "<strong>4. Application Rollout:</strong> Deploy the Canary manifest: <pre>kubectl apply -f k8s/application/app-rollout.yaml</pre>",
                     "<strong>5. The Showstopper:</strong> Watch the Canary shift in real-time: <pre>kubectl argo rollouts get rollout kleva-dotnet -n app --watch</pre>",
-                    "<strong>6. Verification:</strong> Access the app at <code>http://localhost:8080/health</code> and check the Grafana dashboard provisioned by Terraform."
+                    "<strong>6. Verification:</strong> Access the app at <code>http://localhost:8080/health</code> and check the Grafana dashboard provisioned by Terraform.",
+                    "<strong>7. Set Terraform Token:</strong> When Local, ensure your Terraform token is set in your PowerShell environment variables: <pre>$env:TF_TOKEN_app_terraform_io='TerraformToken'</pre>"
                 },
                 Warning = "<strong>Terraform Local:</strong> Ensure your <code>TF_TOKEN_app_terraform_io</code> is set in your PowerShell environment variables if using HCP Terraform as a backend, or ensure the backend is set to local."
             }
