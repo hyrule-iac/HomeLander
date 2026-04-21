@@ -282,25 +282,17 @@
                 Id = 7,
                 Title = "Local Live Demo (PowerShell)",
                 Icon = "💻",
-                Duration = "Live",
+                Duration = "Live Demo",
                 ColorHex = "#3B6D11",
-                TextColorHex = "#ffffff",
-                Chips = new() {
-                    new("Windows 11", "gray"),
-                    new("Terraform Local", "amber"),
-                    new("k3d", "blue"),
-                    new("Argo Rollouts", "coral")
+                Chips = new() { new("Terraform", "amber"), new("k3d", "blue"), new("Argo", "coral") },
+                TalkingPoints = new List<string> {
+                    "<strong>1. Provision Cluster:</strong> <pre>k3d cluster create kleva-cluster --port '8080:80@loadbalancer'</pre>",
+                    "<strong>2. Base Infra (Terraform):</strong> Initialize and apply to create namespaces: <pre>cd terraform; terraform init; terraform apply -auto-approve</pre>",
+                    "<strong>3. Auth Secret:</strong> <pre>kubectl create secret docker-registry ghcr-secret --docker-server=ghcr.io --docker-username='USER' --docker-password='TOKEN' --namespace=app</pre>",
+                    "<strong>4. Deploy Canary:</strong> <pre>kubectl apply -f k8s/application/app-rollout.yaml</pre>",
+                    "<strong>5. Live Watch:</strong> <pre>kubectl argo rollouts get rollout kleva-dotnet -n app --watch</pre>"
                 },
-                TalkingPoints = new() {
-                    "<strong>1. Environment Ready:</strong> Spin up the cluster and map the Load Balancer: <pre>k3d cluster create kleva-cluster --port '8080:80@@loadbalancer'</pre>",
-                    "<strong>2. Infrastructure as Code (Local):</strong> Initialize and apply Terraform to provision Namespaces and the Monitoring stack. <pre>cd terraform; terraform init; terraform apply -auto-approve</pre>",
-                    "<strong>3. Manual Secret Injection:</strong> Since we are local, we must manually provide the GHCR credentials: <pre>kubectl create secret docker-registry ghcr-secret --docker-server=ghcr.io --docker-username='YOUR_USER' --docker-password='YOUR_TOKEN' --namespace=app</pre>",
-                    "<strong>4. Application Rollout:</strong> Deploy the Canary manifest: <pre>kubectl apply -f k8s/application/app-rollout.yaml</pre>",
-                    "<strong>5. The Showstopper:</strong> Watch the Canary shift in real-time: <pre>kubectl argo rollouts get rollout kleva-dotnet -n app --watch</pre>",
-                    "<strong>6. Verification:</strong> Access the app at <code>http://localhost:8080/health</code> and check the Grafana dashboard provisioned by Terraform.",
-                    "<strong>7. Set Terraform Token:</strong> When Local, ensure your Terraform token is set in your PowerShell environment variables: <pre>$env:TF_TOKEN_app_terraform_io='TerraformToken'</pre>"
-                },
-                Warning = "<strong>Terraform Local:</strong> Ensure your <code>TF_TOKEN_app_terraform_io</code> is set in your PowerShell environment variables if using HCP Terraform as a backend, or ensure the backend is set to local."
+                Warning = "Ensure your <strong>TF_TOKEN_app_terraform_io</strong> is set in PowerShell if using HCP Cloud backend locally."
             }
         };
 
