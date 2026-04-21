@@ -1,6 +1,5 @@
 @page "/kleva-devops"
 @rendermode InteractiveServer
-@using HNHQ.Models
 
 <div class="container">
     <div class="header">
@@ -33,257 +32,76 @@
                 </div>
 
                 <div class="section-label">Talking Points & Workflow</div>
-                @foreach (var point in topic.TalkingPoints)
-                {
-                    <div class="talking-point">
-                        <div class="bullet" style="background:@topic.TextColorHex;"></div>
-                        <p>@((MarkupString)point)</p>
-                    </div>
-                }
+                <div class="points-list">
+                    @foreach (var point in topic.Points)
+                    {
+                        <div class="point-item">
+                            <span class="point-marker">▹</span>
+                            <div class="point-content">@((MarkupString)point)</div>
+                        </div>
+                    }
+                </div>
 
                 @if (!string.IsNullOrEmpty(topic.Warning))
                 {
-                    <div class="warn-box">
-                        <p><strong>💡 Pro Tip / Warning:</strong> @((MarkupString)topic.Warning)</p>
+                    <div class="warning-box">
+                        <strong>⚠️ Note:</strong> @((MarkupString)topic.Warning)
                     </div>
                 }
             </div>
         </div>
     }
-
-    <!-- ------------------------------------------------------------------ -->
-    <!-- CD Pipeline Diagram Phase                                           -->
-    <!-- ------------------------------------------------------------------ -->
-    <div class="phase">
-        <div class="phase-header" @onclick="ToggleDiagram">
-            <div class="phase-num" style="background:#EAF3DE; color:#3B6D11;">⎈</div>
-            <span class="phase-icon">🗺️</span>
-            <span class="phase-title">CD Pipeline — visual map</span>
-            <span class="phase-time">reference</span>
-            <span class="phase-arrow @(diagramOpen ? "open" : "")">▶</span>
-        </div>
-
-        <div class="phase-body @(diagramOpen ? "open" : "")">
-            <div class="section-label">Full pipeline flow — CI chain → CD steps</div>
-            <div class="diagram-wrap">
-                <svg width="100%" viewBox="0 0 680 880" role="img" xmlns="http://www.w3.org/2000/svg">
-                    <title>CD Pipeline kleva-devops-lab</title>
-                    <desc>Flowchart showing the full CD deployment pipeline from push trigger through CI Quality, CI Publish, CodeQL, k3d cluster setup, Argo Rollouts, Terraform, app manifests, monitoring stack, and verification steps.</desc>
-                    <defs>
-                        <marker id="dg-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                            <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        </marker>
-                    </defs>
-
-                    <!-- TRIGGER -->
-                    <rect x="220" y="20" width="240" height="44" rx="8" fill="#2d2d2d" stroke="rgba(255,255,255,0.15)" stroke-width="0.5"/>
-                    <text x="340" y="42" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="13" font-weight="500" fill="#e0e0e0">push → master / canary</text>
-                    <line x1="340" y1="64" x2="340" y2="88" stroke="#a0a0a0" stroke-width="1" marker-end="url(#dg-arrow)"/>
-
-                    <!-- CI QUALITY -->
-                    <rect x="180" y="88" width="320" height="56" rx="8" fill="#2a2040" stroke="#534AB7" stroke-width="0.5"/>
-                    <text x="340" y="108" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="13" font-weight="500" fill="#c8c4f8">CI Quality &amp; Security</text>
-                    <text x="340" y="128" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="11" fill="#9590d0">.NET build · Snyk SCA · SonarCloud</text>
-                    <line x1="340" y1="144" x2="340" y2="164" stroke="#a0a0a0" stroke-width="1" marker-end="url(#dg-arrow)"/>
-
-                    <!-- CI PUBLISH -->
-                    <rect x="180" y="164" width="320" height="56" rx="8" fill="#2a2040" stroke="#534AB7" stroke-width="0.5"/>
-                    <text x="340" y="184" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="13" font-weight="500" fill="#c8c4f8">CI Publish Image</text>
-                    <text x="340" y="204" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="11" fill="#9590d0">Build &amp; push → ghcr.io/:latest + :sha</text>
-                    <line x1="340" y1="220" x2="340" y2="240" stroke="#a0a0a0" stroke-width="1" marker-end="url(#dg-arrow)"/>
-
-                    <!-- CODEQL -->
-                    <rect x="180" y="240" width="320" height="56" rx="8" fill="#2a2040" stroke="#534AB7" stroke-width="0.5"/>
-                    <text x="340" y="260" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="13" font-weight="500" fill="#c8c4f8">CodeQL SAST</text>
-                    <text x="340" y="280" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="11" fill="#9590d0">C# security-extended + quality queries</text>
-                    <line x1="340" y1="296" x2="340" y2="326" stroke="#a0a0a0" stroke-width="1" marker-end="url(#dg-arrow)"/>
-
-                    <!-- workflow_call label -->
-                    <text x="340" y="318" text-anchor="middle" font-family="inherit" font-size="10" fill="#a0a0a0">workflow_call</text>
-
-                    <!-- STEP 1: k3d -->
-                    <rect x="140" y="330" width="400" height="56" rx="8" fill="#0d2b22" stroke="#0F6E56" stroke-width="0.5"/>
-                    <text x="340" y="350" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="13" font-weight="500" fill="#7dd8b8">1 · Setup k3d cluster</text>
-                    <text x="340" y="370" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="11" fill="#4fa882">k3d v5.6.0 · port 8080→80 · kubeconfig</text>
-                    <line x1="340" y1="386" x2="340" y2="406" stroke="#a0a0a0" stroke-width="1" marker-end="url(#dg-arrow)"/>
-
-                    <!-- STEP 2: Argo -->
-                    <rect x="140" y="410" width="400" height="68" rx="8" fill="#0d2b22" stroke="#0F6E56" stroke-width="0.5"/>
-                    <text x="340" y="430" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="13" font-weight="500" fill="#7dd8b8">2 · Install Argo Rollouts</text>
-                    <text x="340" y="450" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="11" fill="#4fa882">controller · CRD established wait</text>
-                    <text x="340" y="468" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="11" fill="#4fa882">kubectl-argo-rollouts plugin</text>
-                    <line x1="340" y1="478" x2="340" y2="498" stroke="#a0a0a0" stroke-width="1" marker-end="url(#dg-arrow)"/>
-
-                    <!-- STEP 3: Terraform -->
-                    <rect x="140" y="502" width="400" height="68" rx="8" fill="#0d2b22" stroke="#0F6E56" stroke-width="0.5"/>
-                    <text x="340" y="522" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="13" font-weight="500" fill="#7dd8b8">3 · Terraform apply</text>
-                    <text x="340" y="542" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="11" fill="#4fa882">namespaces: app + monitoring</text>
-                    <text x="340" y="560" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="11" fill="#4fa882">Grafana (Helm) · AnalysisTemplate</text>
-                    <line x1="340" y1="570" x2="340" y2="590" stroke="#a0a0a0" stroke-width="1" marker-end="url(#dg-arrow)"/>
-
-                    <!-- STEP 4: App Manifests -->
-                    <rect x="140" y="594" width="400" height="68" rx="8" fill="#0d2b22" stroke="#0F6E56" stroke-width="0.5"/>
-                    <text x="340" y="614" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="13" font-weight="500" fill="#7dd8b8">4 · Apply app manifests</text>
-                    <text x="340" y="634" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="11" fill="#4fa882">ghcr-secret · configmap · secret</text>
-                    <text x="340" y="652" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="11" fill="#4fa882">Argo Rollout + Services + Ingress</text>
-                    <line x1="340" y1="662" x2="340" y2="682" stroke="#a0a0a0" stroke-width="1" marker-end="url(#dg-arrow)"/>
-
-                    <!-- STEP 5: Monitoring -->
-                    <rect x="140" y="686" width="400" height="68" rx="8" fill="#0d2b22" stroke="#0F6E56" stroke-width="0.5"/>
-                    <text x="340" y="706" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="13" font-weight="500" fill="#7dd8b8">5 · Apply monitoring stack</text>
-                    <text x="340" y="726" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="11" fill="#4fa882">Prometheus full stack</text>
-                    <text x="340" y="744" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="11" fill="#4fa882">Grafana datasource + dashboard ConfigMaps</text>
-                    <line x1="340" y1="754" x2="340" y2="774" stroke="#a0a0a0" stroke-width="1" marker-end="url(#dg-arrow)"/>
-
-                    <!-- STEP 6: Wait -->
-                    <rect x="140" y="778" width="400" height="68" rx="8" fill="#2b2200" stroke="#BA7517" stroke-width="0.5"/>
-                    <text x="340" y="798" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="13" font-weight="500" fill="#f5c842">6 · Wait for rollouts</text>
-                    <text x="340" y="818" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="11" fill="#c49020">canary 20% → analysis → 100%</text>
-                    <text x="340" y="836" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="11" fill="#c49020">prometheus ready · grafana ready</text>
-                    <line x1="340" y1="846" x2="340" y2="858" stroke="#a0a0a0" stroke-width="1" marker-end="url(#dg-arrow)"/>
-
-                    <!-- STEP 7: Verify -->
-                    <rect x="180" y="858" width="320" height="44" rx="8" fill="#0d2200" stroke="#639922" stroke-width="0.5"/>
-                    <text x="340" y="880" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="13" font-weight="500" fill="#97c459">7 · Verify &amp; print cluster state ✅</text>
-
-                    <!-- Side label CI -->
-                    <line x1="88" y1="88" x2="88" y2="296" stroke="rgba(255,255,255,0.12)" stroke-width="0.5" stroke-dasharray="4 3"/>
-                    <text x="78" y="192" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="10" fill="#a0a0a0" transform="rotate(-90 78 192)">CI chain</text>
-
-                    <!-- Side label CD -->
-                    <line x1="88" y1="330" x2="88" y2="902" stroke="rgba(255,255,255,0.12)" stroke-width="0.5" stroke-dasharray="4 3"/>
-                    <text x="78" y="616" text-anchor="middle" dominant-baseline="central" font-family="inherit" font-size="10" fill="#a0a0a0" transform="rotate(-90 78 616)">CD steps</text>
-                </svg>
-            </div>
-        </div>
-    </div>
-
-    <div class="total-bar">
-        <span>Session progress</span>
-        <strong>@((phaseStates.Values.Count(v => v) * 100) / Topics.Count)% Reviewed</strong>
-    </div>
 </div>
 
 @code {
     private Dictionary<int, bool> phaseStates = new();
-    private bool diagramOpen = false;
-    private List<DevOpsTopic> Topics = new();
+
+    public class Topic
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string Icon { get; set; }
+        public string Duration { get; set; }
+        public string ColorHex { get; set; }
+        public string TextColorHex { get; set; } = "#ffffff";
+        public List<ChipModel> Chips { get; set; } = new();
+        public List<string> Points { get; set; } = new();
+        public string Warning { get; set; }
+    }
+
+    public class ChipModel
+    {
+        public string Label { get; set; }
+        public string CssClass { get; set; }
+    }
+
+    private List<Topic> Topics = new();
 
     protected override void OnInitialized()
     {
-        Topics = new List<DevOpsTopic>
+        Topics = new List<Topic>
         {
-            new DevOpsTopic {
-                Id = 0, Title = "Genesis: DevSecOps 3-layer Demo App", Icon = "🎯", Duration = "~2 min",
-                ColorHex = "#EEEDFE", TextColorHex = "#3C3489",
-                Chips = new() {
-                    new("Overview", "purple"),
-                    new("Value prop", "blue")
+            // ... (Tus temas anteriores se mantienen igual aquí)
+            
+            new Topic {
+                Id = 7,
+                Title = "Local Manual Execution (PowerShell)",
+                Icon = "💻",
+                Duration = "Live Demo",
+                ColorHex = "#3B6D11",
+                Chips = new List<ChipModel> {
+                    new ChipModel { Label = "Windows 11", CssClass = "gray" },
+                    new ChipModel { Label = "k3d", CssClass = "blue" },
+                    new ChipModel { Label = "Argo", CssClass = "coral" }
                 },
-                TalkingPoints = new() {
-                    "<strong>Opening line:</strong> \"This is Kleva DevOps Lab — a cloud-native platform demonstrating a complete DevSecOps pipeline end to end. Every push to master triggers three security layers, two infrastructure modules, a live Kubernetes cluster, and a fully instrumented observability stack. Zero manual steps.\"",
-                    "<strong>Why it matters:</strong> Lead with the outcome, not the tools. The interviewer wants to know: can you build something that works in production? This project answers that in the first 30 seconds.",
-                    "<strong>Stack headline:</strong> \".NET 10 — Kubernetes with k3d — Terraform with remote state on HCP Cloud — Prometheus and Grafana. All wired together through GitHub Actions.\""
-                }
-            },
-
-            new DevOpsTopic {
-                Id = 1, Title = "App: .NET 10 cloud-native", Icon = "🧩", Duration = "~5 min",
-                ColorHex = "#E6F1FB", TextColorHex = "#185FA5",
-                Chips = new() {
-                    new(".NET 10", "blue"),
-                    new("Prometheus", "teal"),
-                    new("SRE RED", "teal")
+                Points = new List<string> {
+                    "<strong>1. Cluster Provisioning:</strong> <pre>k3d cluster create kleva-cluster --port '8080:80@loadbalancer'</pre>",
+                    "<strong>2. Authentication:</strong> Create the GHCR secret to pull private images: <pre>kubectl create ns app; kubectl create secret docker-registry ghcr-secret --docker-server=ghcr.io --docker-username='USER' --docker-password='TOKEN' --namespace=app</pre>",
+                    "<strong>3. Deployment:</strong> Apply manifests in order: <pre>kubectl apply -f k8s/application/app-config.yaml; kubectl apply -f k8s/application/app-rollout.yaml</pre>",
+                    "<strong>4. Live Monitoring:</strong> Watch the Canary shift in real-time: <pre>kubectl argo rollouts get rollout kleva-dotnet -n app --watch</pre>",
+                    "<strong>5. Trigger Update:</strong> Force a new version to demonstrate the strategy: <pre>kubectl argo rollouts set image kleva-dotnet kleva-dotnet=ghcr.io/hyrule-iac/kleva-app:latest -n app</pre>"
                 },
-                TalkingPoints = new() {
-                    "<strong>What it is:</strong> \"The application is a minimal .NET 10 server with three endpoints. <code>/</code> serves an HTML UI showing version, environment and live uptime. <code>/health</code> is the Kubernetes liveness probe. <code>/metrics</code> is the Prometheus scrape endpoint.\"",
-                    "<strong>Instrumentation:</strong> \"The app follows the SRE RED pattern: a Counter for total requests by endpoint and status code, a Histogram for request latency with buckets from 5ms to 2s for p95 calculation, a Gauge for active requests that rises and falls with load, and a Gauge for uptime updated every 5 seconds.\"",
-                    "<strong>Cloud-native signals:</strong> Highlight the pod annotations — <code>prometheus.io/scrape: true</code>, port and path — that enable automatic Prometheus discovery without any manual configuration."
-                }
-            },
-
-            new DevOpsTopic {
-                Id = 2, Title = "CI: validation & quality", Icon = "⚙️", Duration = "~8 min",
-                ColorHex = "#E1F5EE", TextColorHex = "#0F6E56",
-                Chips = new() {
-                    new("GitHub Actions", "teal"),
-                    new("Snyk SCA", "amber"),
-                    new("SonarCloud", "amber")
-                },
-                TalkingPoints = new() {
-                    "<strong>Trigger:</strong> \"Every push to master kicks off the CI workflow. The runner sets up .NET 10, restores NuGet dependencies, compiles in Release mode, and runs unit tests.\"",
-                    "<strong>Snyk SCA:</strong> \"After the build, Snyk performs software composition analysis on the <code>.csproj</code> — scanning all dependencies for known CVEs with high severity or above. If Snyk fails, the pipeline stops. Nothing moves forward.\"",
-                    "<strong>SonarCloud SAST:</strong> \"If Snyk passes, SonarCloud runs static analysis using the <code>sonar-project.properties</code> config. It checks code quality, maintainability, and security hotspots in the C# codebase. Quality gate must pass before CI is marked green.\"",
-                    "<strong>Key point:</strong> Each step only runs if the previous one passed — build → test → SCA → SAST. This is shift-left security: issues are caught before they ever reach the cluster."
-                },
-                Warning = "If the <strong>SonarCloud Quality Gate</strong> fails, the pipeline stops automatically. Nothing proceeds to CodeQL or CD."
-            },
-
-            new DevOpsTopic {
-                Id = 3, Title = "Docker: multi-stage & security", Icon = "📦", Duration = "~5 min",
-                ColorHex = "#FAECE7", TextColorHex = "#993C1D",
-                Chips = new() {
-                    new("Multi-stage", "coral"),
-                    new("Snyk container", "amber"),
-                    new("Minimal image", "coral")
-                },
-                TalkingPoints = new() {
-                    "<strong>Multi-stage build:</strong> \"The Dockerfile uses a multi-stage build. The first stage compiles and publishes the .NET app. The second stage copies only the published output into a minimal runtime image — no SDK, no build tools, no extra attack surface.\"",
-                    "<strong>Image security:</strong> \"Snyk also scans the container image for OS-level vulnerabilities in the base image layers. This catches issues that dependency scanning alone would miss.\"",
-                    "<strong>Production readiness:</strong> \"The final image is lean, secure, and tagged for deployment. It exposes port 80 and runs as a non-root user — production defaults from day one.\""
-                }
-            },
-
-            new DevOpsTopic {
-                Id = 4, Title = "CodeQL: semantic security", Icon = "🛡️", Duration = "~5 min",
-                ColorHex = "#FCEBEB", TextColorHex = "#A32D2D",
-                Chips = new() {
-                    new("GHAS", "coral"),
-                    new("SAST", "purple"),
-                    new("security-extended", "purple")
-                },
-                TalkingPoints = new() {
-                    "<strong>Trigger:</strong> \"CodeQL only runs when CI succeeds. This avoids wasting runner minutes on broken builds and ensures analysis runs on code that already compiles and passes tests.\"",
-                    "<strong>Query suites:</strong> \"The workflow runs two query suites: <code>security-extended</code> and <code>security-and-quality</code>. These go deeper than SonarCloud — they detect semantic vulnerabilities like unsafe deserialization, path traversal, and injection patterns in C#.\"",
-                    "<strong>GitHub Security tab:</strong> \"Findings are pushed directly to the Security tab of the repository — a centralized audit trail showing every vulnerability detected, when, and by which commit. This is GitHub Advanced Security in action.\""
-                }
-            },
-
-            new DevOpsTopic {
-                Id = 5, Title = "IaC: Terraform modular", Icon = "🏗️", Duration = "~7 min",
-                ColorHex = "#FAEEDA", TextColorHex = "#854F0B",
-                Chips = new() {
-                    new("HCP Cloud", "amber"),
-                    new("Module k8s", "teal"),
-                    new("Module monitoring", "teal"),
-                    new("Helm", "green")
-                },
-                TalkingPoints = new() {
-                    "<strong>Architecture:</strong> \"The Terraform config is split into a root orchestrator and two child modules. The root <code>main.tf</code> calls the modules in sequence — first <code>k8s</code>, then <code>monitoring</code> with an explicit <code>depends_on</code>.\"",
-                    "<strong>Module k8s:</strong> \"Creates the <code>app</code> and <code>monitoring</code> namespaces in the cluster, and provisions the ConfigMaps with runtime environment variables for the .NET app.\"",
-                    "<strong>Module monitoring:</strong> \"Deploys Grafana via Helm Chart. The admin password never touches any YAML file — it lives in HCP Terraform Variables as a sensitive variable, workspace Demo01, organization Hyrule-Nexus. Terraform injects it into the cluster as a Kubernetes Secret, and Grafana reads it with <code>secretKeyRef</code>.\"",
-                    "<strong>Remote state:</strong> \"All infrastructure state lives remotely in HCP Cloud with automatic locking. No local <code>terraform.tfstate</code> files, no state conflicts, collaborative by default.\""
-                },
-                Warning = "The <code>grafana_admin_password</code> variable has no default — it must be set in HCP Terraform Variables or the apply will fail. Never add a default value for sensitive variables."
-            },
-
-            new DevOpsTopic {
-                Id = 6, Title = "CD: Kubernetes deployment", Icon = "🚀", Duration = "~8 min",
-                ColorHex = "#EAF3DE", TextColorHex = "#3B6D11",
-                Chips = new() {
-                    new("k3d", "green"),
-                    new("kubectl", "blue"),
-                    new("Prometheus", "teal"),
-                    new("Grafana", "green")
-                },
-                TalkingPoints = new() {
-                    "<strong>CD trigger:</strong> \"The CD workflow fires only when CodeQL completes successfully. This is the final gate — no deployment happens unless build, tests, Snyk, SonarCloud, and CodeQL all passed.\"",
-                    "<strong>Cluster setup:</strong> \"The first step creates a k3d cluster with a load balancer on port 8080, simulating a production Kubernetes environment inside the GitHub runner — full API server, etcd, and ingress.\"",
-                    "<strong>Deployment sequence:</strong> \"Terraform apply runs first — provisions namespaces and Grafana. Then <code>kubectl apply</code> deploys the application manifests: the Secret with <code>APP_SECRET_KEY</code>, the ConfigMap with runtime variables, and the Deployment with liveness and readiness probes pointing to <code>/health</code>.\"",
-                    "<strong>Observability:</strong> \"Prometheus autodiscovers the app pod via annotations and starts scraping <code>/metrics</code>. Grafana loads three ConfigMaps automatically — datasource, dashboard provider, and the <code>kleva-app</code> dashboard JSON with five panels: total requests, uptime, request rate, p95 latency, and active requests. No manual Grafana configuration needed.\"",
-                    "<strong>Closing line:</strong> \"From a single git push to a running kluster with metrics visible in Grafana — fully automated. That is the complete Kleva DevOps Lab pipeline.\""
-                },
-                Warning = "Always apply <strong>Secrets before Deployments</strong> to avoid <code>CrashLoopBackOff</code> caused by missing environment variables at pod startup."
+                Warning = "Verify that <strong>Docker Desktop</strong> is running and your PowerShell session has Administrator privileges before starting the cluster."
             }
         };
 
@@ -291,12 +109,6 @@
     }
 
     private void TogglePhase(int id) => phaseStates[id] = !phaseStates.GetValueOrDefault(id);
-    private void ToggleDiagram() => diagramOpen = !diagramOpen;
-
     private bool IsPhaseOpen(int id) => phaseStates.GetValueOrDefault(id);
-
-    private void ToggleAll(bool open)
-    {
-        foreach (var key in phaseStates.Keys.ToList()) phaseStates[key] = open;
-    }
+    private void ToggleAll(bool open) { foreach (var key in Topics.Select(t => t.Id)) phaseStates[key] = open; }
 }
