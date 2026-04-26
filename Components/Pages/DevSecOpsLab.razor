@@ -93,7 +93,7 @@
     <div class="hero">
         <h1 class="hero-title">Demo DevSecOps Lab · Full Pipeline</h1>
         <p class="hero-sub">GitHub Actions Orchestrator · Security-first · Canary Deployments · ~47 min end-to-end</p>
-        <span class="hero-local">100% LOCAL · Docker Desktop + k3d · sin Azure · sin costo</span>
+        <span class="hero-local">100% LOCAL · Docker Desktop + k3d · No Cloud Costs</span>
     </div>
 
     <div class="stats">
@@ -101,52 +101,52 @@
         <div class="stat"><div class="stat-val">~47m</div><div class="stat-lbl">Total Time</div></div>
         <div class="stat"><div class="stat-val">5</div><div class="stat-lbl">Security Gates</div></div>
         <div class="stat"><div class="stat-val">.NET 10</div><div class="stat-lbl">Runtime</div></div>
-        <div class="stat"><div class="stat-val">k3d</div><div class="stat-lbl">Cluster Local</div></div>
-        <div class="stat"><div class="stat-val">FREE</div><div class="stat-lbl">Costo Azure</div></div>
+        <div class="stat"><div class="stat-val">k3d</div><div class="stat-lbl">Local Cluster</div></div>
+        <div class="stat"><div class="stat-val">FREE</div><div class="stat-lbl">Azure Cost</div></div>
     </div>
 
     <div class="prereq-box">
-        <div class="prereq-title">Prerequisitos · instalar antes de empezar</div>
+        <div class="prereq-title">Prerequisites · Install before starting</div>
         <div class="prereq-grid">
             <div class="prereq-item">
                 <div class="prereq-name">Docker Desktop</div>
                 <div class="prereq-cmd">docker --version</div>
-                <div class="prereq-note">Motor de contenedores. Habilitar Kubernetes opcional.</div>
+                <div class="prereq-note">Container engine. Enable Kubernetes if preferred.</div>
             </div>
             <div class="prereq-item">
                 <div class="prereq-name">k3d</div>
                 <div class="prereq-cmd">choco install k3d</div>
-                <div class="prereq-note">Kubernetes ligero sobre Docker. Reemplaza AKS localmente.</div>
+                <div class="prereq-note">Lightweight Kubernetes on Docker. Local AKS replacement.</div>
             </div>
             <div class="prereq-item">
                 <div class="prereq-name">.NET 10 SDK</div>
                 <div class="prereq-cmd">dotnet --version</div>
-                <div class="prereq-note">Para build y tests de la app de demo.</div>
+                <div class="prereq-note">Required for building and testing the demo application.</div>
             </div>
             <div class="prereq-item">
                 <div class="prereq-name">Terraform CLI</div>
                 <div class="prereq-cmd">choco install terraform</div>
-                <div class="prereq-note">v1.9+. Se usará con backend local (no HCP).</div>
+                <div class="prereq-note">v1.9+. Used with local backend (No HCP).</div>
             </div>
             <div class="prereq-item">
                 <div class="prereq-name">kubectl</div>
                 <div class="prereq-cmd">choco install kubernetes-cli</div>
-                <div class="prereq-note">CLI para interactuar con el cluster k3d.</div>
+                <div class="prereq-note">CLI to interact with the k3d cluster.</div>
             </div>
             <div class="prereq-item">
                 <div class="prereq-name">Argo Rollouts CLI</div>
                 <div class="prereq-cmd">kubectl argo rollouts version</div>
-                <div class="prereq-note">Plugin de kubectl para gestionar canary deploys.</div>
+                <div class="prereq-note">Plugin to manage canary deployments.</div>
             </div>
             <div class="prereq-item">
                 <div class="prereq-name">Helm</div>
                 <div class="prereq-cmd">choco install kubernetes-helm</div>
-                <div class="prereq-note">Para instalar Prometheus + Grafana en el cluster.</div>
+                <div class="prereq-note">To install Prometheus + Grafana in the cluster.</div>
             </div>
             <div class="prereq-item">
                 <div class="prereq-name">GitHub CLI (gh)</div>
                 <div class="prereq-cmd">choco install gh</div>
-                <div class="prereq-note">Para gestionar secrets del repo desde terminal.</div>
+                <div class="prereq-note">Manage repository secrets from the terminal.</div>
             </div>
         </div>
     </div>
@@ -163,21 +163,35 @@
             <div class="stage-body">
                 <div class="alert-local">
                     <div class="alert-local-icon">*</div>
-                    <div class="alert-local-text">Este stage vive en GitHub. El workflow se dispara con cada push a main o en un PR. Localmente puedes probarlo con <strong>act</strong> o simplemente hacer push.</div>
+                    <div class="alert-local-text">This stage runs on GitHub. The workflow triggers on push to main or pull requests. You can test locally using <strong>act</strong>.</div>
                 </div>
 
                 <div class="step">
                     <div class="step-num">1.1</div>
                     <div class="step-info">
-                        <div class="step-title">Checkout + setup del entorno <span class="badge badge-tool">GH Actions</span></div>
-                        <div class="step-desc">El primer job clona el repo y configura .NET 10 y Terraform en el runner.</div>
-                        <div class="step-where">Archivo: <span>.github/workflows/devsecops.yml</span></div>
+                        <div class="step-title">Checkout + Environment Setup <span class="badge badge-tool">GH Actions</span></div>
+                        <div class="step-desc">The first job clones the repo and configures .NET 10 and Terraform on the runner.</div>
+                        <div class="step-where">File: <span>.github/workflows/devsecops.yml</span></div>
                         <div class="file-block">jobs:
   orchestrator:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4</div>
+                    </div>
+                    <div class="step-time">~1 min</div>
+                </div>
+
+                <div class="step">
+                    <div class="step-num">1.2</div>
+                    <div class="step-info">
+                        <div class="step-title">Secret Scanning with TruffleHog <span class="badge badge-sec">Security Gate</span></div>
+                        <div class="step-desc">TruffleHog scans commit history for leaked credentials. Pipeline stops if secrets are found.</div>
+                        <div class="file-block">- name: Secret scanning (TruffleHog)
+  uses: trufflesecurity/trufflehog@main
+  with:
+    base: main
+    head: HEAD</div>
                     </div>
                     <div class="step-time">~1 min</div>
                 </div>
@@ -198,9 +212,20 @@
                 <div class="step">
                     <div class="step-num">2.1</div>
                     <div class="step-info">
-                        <div class="step-title">SAST con Semgrep <span class="badge badge-sec">Security</span></div>
-                        <div class="step-desc">Analiza código fuente buscando vulnerabilidades como SQL Injection.</div>
-                        <div class="cmd-block">docker run --rm -v "${PWD}:/src" semgrep/semgrep</div>
+                        <div class="step-title">SAST with Semgrep <span class="badge badge-sec">Security</span></div>
+                        <div class="step-desc">Analyzes source code for patterns like SQL Injection or insecure logging.</div>
+                        <div class="cmd-block"><span class="cmd-comment"># Run Semgrep locally with Docker</span>
+docker run --rm -v "${PWD}:/src" semgrep/semgrep semgrep --config=p/csharp</div>
+                    </div>
+                    <div class="step-time">~3 min</div>
+                </div>
+
+                <div class="step">
+                    <div class="step-num">2.2</div>
+                    <div class="step-info">
+                        <div class="step-title">SCA with Trivy <span class="badge badge-sec">Security</span></div>
+                        <div class="step-desc">Scans NuGet dependencies and Docker images for CVEs. Generates SBOM.</div>
+                        <div class="cmd-block">docker run --rm aquasec/trivy fs /workspace</div>
                     </div>
                     <div class="step-time">~3 min</div>
                 </div>
@@ -209,9 +234,56 @@
     </div>
 
     <div class="stage">
+        <div class="stage-header" @onclick='() => ToggleStage("s3")'>
+            <div class="stage-dot dot-teal"></div>
+            <div class="stage-name">Stage 3 · Build & Containerize <span class="badge badge-tool">Docker</span></div>
+            <div class="stage-time">~7 min</div>
+            <div class="chevron @(IsStageOpen("s3") ? "chevron-open" : "")">›</div>
+        </div>
+        @if (IsStageOpen("s3"))
+        {
+            <div class="stage-body">
+                <div class="step">
+                    <div class="step-num">3.1</div>
+                    <div class="step-info">
+                        <div class="step-title">Multi-stage Docker Build <span class="badge badge-tool">Container</span></div>
+                        <div class="step-desc">Builds a secure .NET 10 image using non-root users and minimal runtime base.</div>
+                        <div class="file-block"><span class="cmd-comment"># Secure Dockerfile sample</span>
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
+USER appuser
+COPY --from=build /app/publish .</div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="stage">
+        <div class="stage-header" @onclick='() => ToggleStage("s4")'>
+            <div class="stage-dot dot-purple"></div>
+            <div class="stage-name">Stage 4 · Infrastructure & Cluster <span class="badge badge-iac">Terraform</span></div>
+            <div class="stage-time">~10 min</div>
+            <div class="chevron @(IsStageOpen("s4") ? "chevron-open" : "")">›</div>
+        </div>
+        @if (IsStageOpen("s4"))
+        {
+            <div class="stage-body">
+                <div class="step">
+                    <div class="step-num">4.1</div>
+                    <div class="step-info">
+                        <div class="step-title">k3d Local Cluster Setup <span class="badge badge-local">Local</span></div>
+                        <div class="step-desc">Replaces AKS by spinning up a full Kubernetes cluster inside Docker.</div>
+                        <div class="cmd-block">k3d cluster create demo-cluster --agents 1</div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="stage">
         <div class="stage-header" @onclick='() => ToggleStage("s5")'>
             <div class="stage-dot dot-coral"></div>
-            <div class="stage-name">Stage 5 · Progressive Delivery <span class="badge badge-tool">GitOps</span></div>
+            <div class="stage-name">Stage 5 · Progressive Delivery <span class="badge badge-tool">Argo Rollouts</span></div>
             <div class="stage-time">~12 min</div>
             <div class="chevron @(IsStageOpen("s5") ? "chevron-open" : "")">›</div>
         </div>
@@ -221,9 +293,30 @@
                 <div class="step">
                     <div class="step-num">5.1</div>
                     <div class="step-info">
-                        <div class="step-title">Argo Rollouts Canary <span class="badge badge-tool">GitOps</span></div>
-                        <div class="step-desc">Define la estrategia: 10% tráfico inicial, análisis de métricas y promoción automática.</div>
-                        <div class="cmd-block">kubectl apply -f infra/rollout.yaml</div>
+                        <div class="step-title">Canary Strategy (10% → 100%) <span class="badge badge-tool">GitOps</span></div>
+                        <div class="step-desc">Shifts traffic to the new version while monitoring Prometheus metrics.</div>
+                        <div class="cmd-block">kubectl argo rollouts promote demo-app</div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="stage">
+        <div class="stage-header" @onclick='() => ToggleStage("s6")'>
+            <div class="stage-dot dot-green"></div>
+            <div class="stage-name">Stage 6 · Observability <span class="badge badge-obs">Prometheus</span></div>
+            <div class="stage-time">~5 min</div>
+            <div class="chevron @(IsStageOpen("s6") ? "chevron-open" : "")">›</div>
+        </div>
+        @if (IsStageOpen("s6"))
+        {
+            <div class="stage-body">
+                <div class="step">
+                    <div class="step-num">6.1</div>
+                    <div class="step-info">
+                        <div class="step-title">Metrics & Dashboards <span class="badge badge-tool">Grafana</span></div>
+                        <div class="step-desc">Visualize cluster health and application performance in real-time.</div>
                     </div>
                 </div>
             </div>
@@ -233,8 +326,10 @@
 </div>
 
 @code {
+    // Stores the ID of stages that are currently expanded
     private HashSet<string> openStages = new() { "s1" };
 
+    // Toggles the visibility of a pipeline stage
     private void ToggleStage(string id)
     {
         if (!openStages.Add(id))
@@ -243,5 +338,6 @@
         }
     }
 
+    // Checks if a specific stage should be rendered as open
     private bool IsStageOpen(string id) => openStages.Contains(id);
 }
