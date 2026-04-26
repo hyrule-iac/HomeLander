@@ -1,6 +1,6 @@
-﻿@page "/devsecops-lab"
+@page "/devsecops-lab"
 
-<PageTitle>DevSecOps Lab · Full Pipeline</PageTitle>
+<PageTitle>Demo DevSecOps Lab · Full Pipeline</PageTitle>
 
 <style>
     :root {
@@ -26,70 +26,160 @@
     .hero { padding: 1.5rem 0; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
     .hero-title { font-size: 26px; font-weight: 700; color: var(--text-primary); }
     .hero-sub { font-size: 14px; color: var(--text-secondary); margin-top: 6px; }
-    
+    .hero-local { display: inline-block; margin-top: 10px; font-size: 12px; color: #00ff41; background: rgba(0,255,65,0.07); border: 1px solid rgba(0,255,65,0.2); border-radius: 6px; padding: 4px 12px; }
+
     .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 2rem; }
     .stat { background: var(--card-bg); border-radius: 10px; padding: 1.2rem; border: 1px solid var(--border-color); }
     .stat-val { font-size: 24px; font-weight: 700; color: var(--accent-blue); }
     .stat-lbl { font-size: 11px; color: var(--text-secondary); margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; }
 
+    .prereq-box { background: #060a06; border: 1px solid #1a3a1a; border-radius: 10px; padding: 18px 20px; margin-bottom: 1.5rem; }
+    .prereq-title { font-size: 13px; font-weight: 700; color: #00ff41; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    .prereq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+    .prereq-item { background: #0d0d0d; border: 1px solid #1f3a1f; border-radius: 8px; padding: 10px 14px; }
+    .prereq-name { font-size: 13px; font-weight: 600; color: #e0e0e0; }
+    .prereq-cmd { font-size: 11px; color: #00ff41; font-family: 'Consolas', monospace; margin-top: 4px; }
+    .prereq-note { font-size: 11px; color: #666; margin-top: 3px; }
+
     .stage { border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 12px; background: var(--card-bg); overflow: hidden; }
-    .stage-header { display: flex; align-items: center; gap: 12px; padding: 14px 18px; cursor: pointer; transition: background 0.2s; }
+    .stage-header { display: flex; align-items: center; gap: 12px; padding: 14px 18px; cursor: pointer; transition: background 0.2s; user-select: none; }
     .stage-header:hover { background: #161616; }
-    
-    .stage-dot { width: 10px; height: 10px; border-radius: 50%; }
-    .dot-blue { background: #0078d4; box-shadow: 0 0 8px #0078d4; }
-    .dot-amber { background: #ffb900; box-shadow: 0 0 8px #ffb900; }
-    .dot-teal { background: #008272; box-shadow: 0 0 8px #008272; }
-    .dot-purple { background: #5c2d91; box-shadow: 0 0 8px #5c2d91; }
-    .dot-green { background: #107c10; box-shadow: 0 0 8px #107c10; }
-    .dot-red { background: #d83b01; box-shadow: 0 0 8px #d83b01; }
-    
+
+    .stage-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .dot-blue   { background: #0078d4; box-shadow: 0 0 8px #0078d4; }
+    .dot-amber  { background: #ffb900; box-shadow: 0 0 8px #ffb900; }
+    .dot-teal   { background: #008272; box-shadow: 0 0 8px #008272; }
+    .dot-purple { background: #7b5ea7; box-shadow: 0 0 8px #7b5ea7; }
+    .dot-green  { background: #107c10; box-shadow: 0 0 8px #107c10; }
+    .dot-coral  { background: #d85a30; box-shadow: 0 0 8px #d85a30; }
+
     .stage-name { font-size: 15px; font-weight: 600; flex: 1; color: #f0f0f0; }
-    .stage-time { font-size: 12px; color: #666; }
+    .stage-time { font-size: 12px; color: #555; margin-right: 8px; }
+    .chevron { font-size: 14px; color: #444; transition: transform 0.2s; }
+    .chevron-open { transform: rotate(90deg); }
 
     .stage-body { padding: 20px; border-top: 1px solid var(--border-color); background: #050505; }
-    .step { background: #0d0d0d; padding: 14px; border-radius: 8px; border: 1px solid #1f1f1f; display: flex; gap: 14px; margin-bottom: 12px; }
-    .step-num { font-weight: 800; color: var(--accent-blue); min-width: 25px; }
+
+    .step { background: #0d0d0d; padding: 16px; border-radius: 8px; border: 1px solid #1f1f1f; display: flex; gap: 14px; margin-bottom: 14px; }
+    .step:last-child { margin-bottom: 0; }
+    .step-num { font-weight: 800; color: var(--accent-blue); min-width: 28px; font-size: 13px; padding-top: 1px; }
     .step-info { flex: 1; }
     .step-title { font-weight: 600; font-size: 14px; color: #e0e0e0; }
-    .step-desc { font-size: 13px; color: #b0b0b0; margin: 8px 0; line-height: 1.4; }
-    .cmd-block { background: #000; color: var(--terminal-green); padding: 12px; border-radius: 6px; font-family: 'Consolas', monospace; font-size: 12px; border: 1px solid #1a1a1a; overflow-x: auto; white-space: pre; }
-    
-    .badge { font-size: 10px; padding: 3px 10px; border-radius: 4px; font-weight: 600; text-transform: uppercase; margin-left: 8px; }
-    .badge-tool { background: rgba(0, 120, 212, 0.1); color: #58a6ff; border: 1px solid rgba(0, 120, 212, 0.3); }
-    .badge-sec { background: rgba(232, 17, 35, 0.1); color: #f85149; border: 1px solid rgba(232, 17, 35, 0.3); }
+    .step-desc { font-size: 13px; color: #b0b0b0; margin: 8px 0 6px; line-height: 1.6; }
+    .step-where { font-size: 12px; color: #555; margin-bottom: 8px; }
+    .step-where span { color: #888; font-style: italic; }
+
+    .cmd-block { background: #000; color: var(--terminal-green); padding: 12px 14px; border-radius: 6px; font-family: 'Consolas', monospace; font-size: 12px; border: 1px solid #1a1a1a; overflow-x: auto; white-space: pre; line-height: 1.7; margin-top: 8px; }
+    .cmd-comment { color: #3a7a3a; }
+
+    .file-block { background: #060d06; color: #c8e6c9; padding: 12px 14px; border-radius: 6px; font-family: 'Consolas', monospace; font-size: 11px; border: 1px solid #1a3a1a; overflow-x: auto; white-space: pre; line-height: 1.6; margin-top: 8px; }
+
+    .badge { font-size: 10px; padding: 3px 10px; border-radius: 4px; font-weight: 600; text-transform: uppercase; margin-left: 8px; vertical-align: middle; }
+    .badge-tool { background: rgba(0,120,212,0.1); color: #58a6ff; border: 1px solid rgba(0,120,212,0.3); }
+    .badge-sec  { background: rgba(232,17,35,0.1); color: #f85149; border: 1px solid rgba(232,17,35,0.3); }
+    .badge-iac  { background: rgba(0,130,114,0.1); color: #3fb950; border: 1px solid rgba(0,130,114,0.3); }
+    .badge-obs  { background: rgba(255,185,0,0.1); color: #ffb900; border: 1px solid rgba(255,185,0,0.3); }
+    .badge-local { background: rgba(0,255,65,0.08); color: #00ff41; border: 1px solid rgba(0,255,65,0.2); }
+
+    .alert-local { display: flex; gap: 10px; align-items: flex-start; background: #060a06; border: 1px solid #1a3a1a; border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; }
+    .alert-local-icon { color: #00ff41; font-size: 14px; margin-top: 1px; flex-shrink: 0; }
+    .alert-local-text { font-size: 12px; color: #8a9a8a; line-height: 1.6; }
+
+    .step-time { font-size: 11px; color: #444; white-space: nowrap; padding-top: 2px; flex-shrink: 0; }
 </style>
 
 <div class="lab-container">
+
     <div class="hero">
-        <h1 class="hero-title">Kleva DevSecOps Lab · Full Pipeline</h1>
-        <p class="hero-sub">Hybrid Cloud Orchestration · GitHub & Azure DevOps</p>
+        <h1 class="hero-title">Demo DevSecOps Lab · Full Pipeline</h1>
+        <p class="hero-sub">GitHub Actions Orchestrator · Security-first · Canary Deployments · ~47 min end-to-end</p>
+        <span class="hero-local">100% LOCAL · Docker Desktop + k3d · sin Azure · sin costo</span>
     </div>
 
     <div class="stats">
         <div class="stat"><div class="stat-val">6</div><div class="stat-lbl">Total Stages</div></div>
         <div class="stat"><div class="stat-val">~47m</div><div class="stat-lbl">Total Time</div></div>
-        <div class="stat"><div class="stat-val">8</div><div class="stat-lbl">Tools Scan</div></div>
+        <div class="stat"><div class="stat-val">5</div><div class="stat-lbl">Security Gates</div></div>
         <div class="stat"><div class="stat-val">.NET 10</div><div class="stat-lbl">Runtime</div></div>
+        <div class="stat"><div class="stat-val">k3d</div><div class="stat-lbl">Cluster Local</div></div>
+        <div class="stat"><div class="stat-val">FREE</div><div class="stat-lbl">Costo Azure</div></div>
+    </div>
+
+    <div class="prereq-box">
+        <div class="prereq-title">Prerequisitos · instalar antes de empezar</div>
+        <div class="prereq-grid">
+            <div class="prereq-item">
+                <div class="prereq-name">Docker Desktop</div>
+                <div class="prereq-cmd">docker --version</div>
+                <div class="prereq-note">Motor de contenedores. Habilitar Kubernetes opcional.</div>
+            </div>
+            <div class="prereq-item">
+                <div class="prereq-name">k3d</div>
+                <div class="prereq-cmd">choco install k3d</div>
+                <div class="prereq-note">Kubernetes ligero sobre Docker. Reemplaza AKS localmente.</div>
+            </div>
+            <div class="prereq-item">
+                <div class="prereq-name">.NET 10 SDK</div>
+                <div class="prereq-cmd">dotnet --version</div>
+                <div class="prereq-note">Para build y tests de la app de demo.</div>
+            </div>
+            <div class="prereq-item">
+                <div class="prereq-name">Terraform CLI</div>
+                <div class="prereq-cmd">choco install terraform</div>
+                <div class="prereq-note">v1.9+. Se usará con backend local (no HCP).</div>
+            </div>
+            <div class="prereq-item">
+                <div class="prereq-name">kubectl</div>
+                <div class="prereq-cmd">choco install kubernetes-cli</div>
+                <div class="prereq-note">CLI para interactuar con el cluster k3d.</div>
+            </div>
+            <div class="prereq-item">
+                <div class="prereq-name">Argo Rollouts CLI</div>
+                <div class="prereq-cmd">kubectl argo rollouts version</div>
+                <div class="prereq-note">Plugin de kubectl para gestionar canary deploys.</div>
+            </div>
+            <div class="prereq-item">
+                <div class="prereq-name">Helm</div>
+                <div class="prereq-cmd">choco install kubernetes-helm</div>
+                <div class="prereq-note">Para instalar Prometheus + Grafana en el cluster.</div>
+            </div>
+            <div class="prereq-item">
+                <div class="prereq-name">GitHub CLI (gh)</div>
+                <div class="prereq-cmd">choco install gh</div>
+                <div class="prereq-note">Para gestionar secrets del repo desde terminal.</div>
+            </div>
+        </div>
     </div>
 
     <div class="stage">
         <div class="stage-header" @onclick='() => ToggleStage("s1")'>
             <div class="stage-dot dot-blue"></div>
-            <div class="stage-name">Stage 1 · CI Orchestrator (GitHub Actions)</div>
-            <div class="stage-time">5m</div>
+            <div class="stage-name">Stage 1 · CI Orchestrator <span class="badge badge-tool">GitHub Actions</span></div>
+            <div class="stage-time">~5 min</div>
+            <div class="chevron @(IsStageOpen("s1") ? "chevron-open" : "")">›</div>
         </div>
         @if (IsStageOpen("s1"))
         {
             <div class="stage-body">
+                <div class="alert-local">
+                    <div class="alert-local-icon">*</div>
+                    <div class="alert-local-text">Este stage vive en GitHub. El workflow se dispara con cada push a main o en un PR. Localmente puedes probarlo con <strong>act</strong> o simplemente hacer push.</div>
+                </div>
+
                 <div class="step">
                     <div class="step-num">1.1</div>
                     <div class="step-info">
-                        <div class="step-title">Secret Scanning <span class="badge badge-sec">Security</span></div>
-                        <div class="step-desc">TruffleHog scans to prevent secrets from entering the repository.</div>
-                        <div class="cmd-block">- name: Secret Scan
-  uses: trufflesecurity/trufflehog@main</div>
+                        <div class="step-title">Checkout + setup del entorno <span class="badge badge-tool">GH Actions</span></div>
+                        <div class="step-desc">El primer job clona el repo y configura .NET 10 y Terraform en el runner.</div>
+                        <div class="step-where">Archivo: <span>.github/workflows/devsecops.yml</span></div>
+                        <div class="file-block">jobs:
+  orchestrator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4</div>
                     </div>
+                    <div class="step-time">~1 min</div>
                 </div>
             </div>
         }
@@ -98,8 +188,9 @@
     <div class="stage">
         <div class="stage-header" @onclick='() => ToggleStage("s2")'>
             <div class="stage-dot dot-amber"></div>
-            <div class="stage-name">Stage 2 · Code & Dependency Security</div>
-            <div class="stage-time">8m</div>
+            <div class="stage-name">Stage 2 · Security Scanners <span class="badge badge-sec">SAST + SCA</span></div>
+            <div class="stage-time">~8 min</div>
+            <div class="chevron @(IsStageOpen("s2") ? "chevron-open" : "")">›</div>
         </div>
         @if (IsStageOpen("s2"))
         {
@@ -107,57 +198,11 @@
                 <div class="step">
                     <div class="step-num">2.1</div>
                     <div class="step-info">
-                        <div class="step-title">SAST with Semgrep <span class="badge badge-sec">Security</span></div>
-                        <div class="step-desc">Static analysis to detect vulnerabilities in .NET 10 code.</div>
+                        <div class="step-title">SAST con Semgrep <span class="badge badge-sec">Security</span></div>
+                        <div class="step-desc">Analiza código fuente buscando vulnerabilidades como SQL Injection.</div>
+                        <div class="cmd-block">docker run --rm -v "${PWD}:/src" semgrep/semgrep</div>
                     </div>
-                </div>
-                <div class="step">
-                    <div class="step-num">2.2</div>
-                    <div class="step-info">
-                        <div class="step-title">SCA with Trivy <span class="badge badge-tool">Open Source</span></div>
-                        <div class="step-desc">Vulnerability scanning for NuGet packages and base images.</div>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
-
-    <div class="stage">
-        <div class="stage-header" @onclick='() => ToggleStage("s3")'>
-            <div class="stage-dot dot-teal"></div>
-            <div class="stage-name">Stage 3 · Infrastructure as Code (Terraform)</div>
-            <div class="stage-time">12m</div>
-        </div>
-        @if (IsStageOpen("s3"))
-        {
-            <div class="stage-body">
-                <div class="step">
-                    <div class="step-num">3.1</div>
-                    <div class="step-info">
-                        <div class="step-title">HCP Remote Apply <span class="badge badge-tool">HashiCorp</span></div>
-                        <div class="step-desc">Remote execution for state persistence in Terraform Cloud.</div>
-                        <div class="cmd-block">terraform apply -auto-approve</div>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
-
-    <div class="stage">
-        <div class="stage-header" @onclick='() => ToggleStage("s4")'>
-            <div class="stage-dot dot-purple"></div>
-            <div class="stage-name">Stage 4 · Cloud & Container Configuration</div>
-            <div class="stage-time">7m</div>
-        </div>
-        @if (IsStageOpen("s4"))
-        {
-            <div class="stage-body">
-                <div class="step">
-                    <div class="step-num">4.1</div>
-                    <div class="step-info">
-                        <div class="step-title">Policy as Code <span class="badge badge-sec">Azure Policy</span></div>
-                        <div class="step-desc">Audit tags and region restrictions across the newly created Azure resources.</div>
-                    </div>
+                    <div class="step-time">~3 min</div>
                 </div>
             </div>
         }
@@ -165,9 +210,10 @@
 
     <div class="stage">
         <div class="stage-header" @onclick='() => ToggleStage("s5")'>
-            <div class="stage-dot dot-green"></div>
-            <div class="stage-name">Stage 5 · Progressive Delivery (ArgoCD)</div>
-            <div class="stage-time">10m</div>
+            <div class="stage-dot dot-coral"></div>
+            <div class="stage-name">Stage 5 · Progressive Delivery <span class="badge badge-tool">GitOps</span></div>
+            <div class="stage-time">~12 min</div>
+            <div class="chevron @(IsStageOpen("s5") ? "chevron-open" : "")">›</div>
         </div>
         @if (IsStageOpen("s5"))
         {
@@ -175,41 +221,26 @@
                 <div class="step">
                     <div class="step-num">5.1</div>
                     <div class="step-info">
-                        <div class="step-title">Blue/Green Deployment <span class="badge badge-tool">GitOps</span></div>
-                        <div class="step-desc">Zero-downtime deployment using Argo Rollouts to manage traffic shifts.</div>
+                        <div class="step-title">Argo Rollouts Canary <span class="badge badge-tool">GitOps</span></div>
+                        <div class="step-desc">Define la estrategia: 10% tráfico inicial, análisis de métricas y promoción automática.</div>
+                        <div class="cmd-block">kubectl apply -f infra/rollout.yaml</div>
                     </div>
                 </div>
             </div>
         }
     </div>
 
-    <div class="stage">
-        <div class="stage-header" @onclick='() => ToggleStage("s6")'>
-            <div class="stage-dot dot-red"></div>
-            <div class="stage-name">Stage 6 · Observability & Feedback</div>
-            <div class="stage-time">5m</div>
-        </div>
-        @if (IsStageOpen("s6"))
-        {
-            <div class="stage-body">
-                <div class="step">
-                    <div class="step-num">6.1</div>
-                    <div class="step-info">
-                        <div class="step-title">Log Aggregation <span class="badge badge-tool">Prometheus</span></div>
-                        <div class="step-desc">Real-time metric collection from the hybrid cloud environment.</div>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
 </div>
 
 @code {
     private HashSet<string> openStages = new() { "s1" };
 
-    private void ToggleStage(string id) 
-    { 
-        if (!openStages.Add(id)) openStages.Remove(id); 
+    private void ToggleStage(string id)
+    {
+        if (!openStages.Add(id))
+        {
+            openStages.Remove(id);
+        }
     }
 
     private bool IsStageOpen(string id) => openStages.Contains(id);
